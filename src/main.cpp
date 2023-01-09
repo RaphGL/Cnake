@@ -2,9 +2,8 @@
 #include <random>
 #include <time.h>
 #include <vector>
-#include <unistd.h>
 #include <array>
-#include <unordered_set>
+#include <csignal>
 
 class Bar
 {
@@ -42,7 +41,12 @@ public:
         {
             mvprintw(midy, x, " ");
         }
-        mvprintw((this->y + this->maxy) / 2, this->x * 0.4, "GAME OVER   Final Score: %d ", score);
+
+        std::string msg{"Final Score: %d"};
+        mvprintw((this->y + this->maxy) / 2, this->x / 2 - msg.size() / 2, msg.c_str(), score);
+
+        std::string again{"GAME OVER"};
+        mvprintw((this->maxy + 3) / 2, this->maxx / 2 - again.size() / 2, again.c_str());
     }
 };
 
@@ -61,15 +65,20 @@ public:
         while (!found_position)
         {
             std::srand(time(NULL));
-            this->x = std::rand() % (maxx - 8);
-            this->y = std::rand() % (maxy - 16);
-            if (this->x != snake_x && this->y != snake_y)
+            this->x = std::rand() % (maxx - 3);
+            this->y = std::rand() % (maxy - 4 - 3);
+            if (this->x != snake_x && this->y != snake_y && this->x > 3 && this->y > 3)
             {
                 found_position = true;
             }
         }
 
-        mvprintw(this->y, this->x, "⬤");
+        mvprintw(this->y, this->x, "▒");
+    }
+
+    void draw()
+    {
+        mvprintw(this->y, this->x, "▒");
     }
 
     bool is_eaten(int snake_y, int snake_x)
@@ -148,6 +157,19 @@ class Snake
         if ((this->x > 0 && this->x < this->maxx) && (this->y > 0 && this->y < this->maxy))
         {
             this->is_alive = true;
+
+            if (this->body.size() > 3)
+            {
+                auto head = this->body.at(0);
+                for (auto i = ++this->body.begin(); i != this->body.end(); i++)
+                {
+                    if (i->at(0) == head.at(0) && i->at(1) == head.at(1))
+                    {
+                        this->is_alive = false;
+                        return;
+                    }
+                }
+            }
         }
         else
         {
@@ -176,6 +198,11 @@ public:
         this->direction = SnakeDirection::LEFT;
         this->is_alive = true;
         this->len = 3;
+    }
+
+    ~Snake()
+    {
+        this->body.clear();
     }
 
     void draw()
@@ -246,9 +273,15 @@ int main()
     Snake snake{};
     Food food(snake.y, snake.x);
 
+    signal(SIGINT, [](int signum)
+           {
+        endwin();
+        exit(signum); });
+
     for (;;)
     {
         snake.update();
+        food.draw();
         if (food.is_eaten(snake.y, snake.x))
         {
             score++;
