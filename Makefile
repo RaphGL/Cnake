@@ -5,6 +5,6 @@ LDFLAGS = -lncursesw
 .PHONY: all
 
 all: src/main.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $?
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $? -o cnakepp
 clean:
 	rm -f a.out
