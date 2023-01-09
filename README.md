@@ -2,6 +2,8 @@
 
 A very simple snake game made with Ncurses and C++
 
+![Screenshot 1](screenshot1.png)  
+
 # Controls
 `w` - move up
 `a` - move left
