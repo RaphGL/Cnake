@@ -118,7 +118,6 @@ class Snake
         case 'w':
             if (this->direction == SnakeDirection::DOWN)
             {
-                this->draw();
                 return;
             }
             this->direction = SnakeDirection::UP;
@@ -127,7 +126,6 @@ class Snake
         case 's':
             if (this->direction == SnakeDirection::UP)
             {
-                this->draw();
                 return;
             }
             this->direction = SnakeDirection::DOWN;
@@ -136,7 +134,6 @@ class Snake
         case 'd':
             if (this->direction == SnakeDirection::LEFT)
             {
-                this->draw();
                 return;
             }
             this->direction = SnakeDirection::RIGHT;
@@ -144,7 +141,6 @@ class Snake
         case 'a':
             if (this->direction == SnakeDirection::RIGHT)
             {
-                this->draw();
                 return;
             }
             this->direction = SnakeDirection::LEFT;
@@ -160,8 +156,8 @@ class Snake
 
             if (this->body.size() > 3)
             {
-                auto head = this->body.at(0);
-                for (auto i = ++this->body.begin(); i != this->body.end(); i++)
+                auto head = this->body.back();
+                for (auto i = this->body.begin(); i != --this->body.end(); i++)
                 {
                     if (i->at(0) == head.at(0) && i->at(1) == head.at(1))
                     {
