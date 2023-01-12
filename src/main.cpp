@@ -56,20 +56,31 @@ class Food
     int y;
 
 public:
-    Food(int snake_y, int snake_x)
+    Food(std::vector<std::array<int, 2>> &body)
     {
         int maxx, maxy;
         getmaxyx(stdscr, maxy, maxx);
 
-        bool found_position = false;
-        while (!found_position)
+        for (;;)
         {
             std::srand(time(NULL));
             this->x = std::rand() % (maxx - 3);
             this->y = std::rand() % (maxy - 4 - 3);
-            if (this->x != snake_x && this->y != snake_y && this->x > 3 && this->y > 3)
+
+            // makes loop break if a new food position is found that doesn't overlap with the snake body
+            bool found_position = true;
+            for (const auto &i : body) // i[0] == snake.x && i[1] == snake.y
             {
-                found_position = true;
+                if (this->x == i.at(0) && this->y == i.at(1))
+                {
+                    found_position = false;
+                    break;
+                }
+            }
+
+            if (found_position && this->x > 3 && this->y > 3)
+            {
+                break;
             }
         }
 
@@ -81,6 +92,7 @@ public:
         mvprintw(this->y, this->x, "▒");
     }
 
+    // takes the coordinate of the snake's head
     bool is_eaten(int snake_y, int snake_x)
     {
         if (this->x == snake_x && this->y == snake_y)
@@ -105,7 +117,6 @@ enum class SnakeDirection
 class Snake
 {
     SnakeDirection direction;
-    std::vector<std::array<int, 2>> body;
     size_t len;
 
     void get_direction()
@@ -114,24 +125,35 @@ class Snake
         int input = getch();
         switch (input)
         {
-        // arrow up
+        case 'p':
+            mvprintw(this->maxy / 2, this->maxx / 2, "PAUSED");
+            for (;;)
+            {
+                if (getch() == 'p')
+                {
+                    mvprintw(this->maxy / 2, this->maxx / 2, "      ");
+                    return;
+                }
+            }
+            break;
         case 'w':
+        case KEY_UP:
             if (this->direction == SnakeDirection::DOWN)
             {
                 return;
             }
             this->direction = SnakeDirection::UP;
             break;
-        // arrow down
         case 's':
+        case KEY_DOWN:
             if (this->direction == SnakeDirection::UP)
             {
                 return;
             }
             this->direction = SnakeDirection::DOWN;
             break;
-        // arrow right
         case 'd':
+        case KEY_RIGHT:
             if (this->direction == SnakeDirection::LEFT)
             {
                 return;
@@ -139,6 +161,7 @@ class Snake
             this->direction = SnakeDirection::RIGHT;
             break;
         case 'a':
+        case KEY_LEFT:
             if (this->direction == SnakeDirection::RIGHT)
             {
                 return;
@@ -180,6 +203,7 @@ public:
     int maxx;
     int maxy;
     bool is_alive;
+    std::vector<std::array<int, 2>> body;
 
     Snake()
     {
@@ -194,11 +218,6 @@ public:
         this->direction = SnakeDirection::LEFT;
         this->is_alive = true;
         this->len = 3;
-    }
-
-    ~Snake()
-    {
-        this->body.clear();
     }
 
     void draw()
@@ -234,11 +253,11 @@ public:
             this->x++;
             break;
         case SnakeDirection::UP:
-            timeout(TIMEOUT * 2);
+            timeout(TIMEOUT * 1.8);
             this->y--;
             break;
         case SnakeDirection::DOWN:
-            timeout(TIMEOUT * 2);
+            timeout(TIMEOUT * 1.8);
             this->y++;
             break;
         }
@@ -267,7 +286,7 @@ int main()
     bar.draw(score);
 
     Snake snake{};
-    Food food(snake.y, snake.x);
+    Food food(snake.body);
 
     signal(SIGINT, [](int signum)
            {
@@ -282,7 +301,7 @@ int main()
         {
             score++;
             bar.draw(score);
-            food = Food(snake.y, snake.x);
+            food = Food(snake.body);
             snake.grow();
             snake.grow();
         }
