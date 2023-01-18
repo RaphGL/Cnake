@@ -56,7 +56,7 @@ class Food
     int y;
 
 public:
-    Food(std::vector<std::array<int, 2>> &body)
+    Food(std::vector<std::array<int, 2>> &snake_body)
     {
         int maxx, maxy;
         getmaxyx(stdscr, maxy, maxx);
@@ -69,7 +69,7 @@ public:
 
             // makes loop break if a new food position is found that doesn't overlap with the snake body
             bool found_position = true;
-            for (const auto &i : body) // i[0] == snake.x && i[1] == snake.y
+            for (const auto &i : snake_body) // i[0] == snake.x && i[1] == snake.y
             {
                 if (this->x == i.at(0) && this->y == i.at(1))
                 {
@@ -97,6 +97,7 @@ public:
     {
         if (this->x == snake_x && this->y == snake_y)
         {
+            mvprintw(this->y, this->x, "█");
             return true;
         }
 
@@ -173,26 +174,19 @@ class Snake
 
     void check_life_status()
     {
-        if ((this->x > 0 && this->x < this->maxx) && (this->y > 0 && this->y < this->maxy))
+        if (this->body.size() < 3)
         {
-            this->is_alive = true;
-
-            if (this->body.size() > 3)
-            {
-                auto head = this->body.back();
-                for (auto i = this->body.begin(); i != --this->body.end(); i++)
-                {
-                    if (i->at(0) == head.at(0) && i->at(1) == head.at(1))
-                    {
-                        this->is_alive = false;
-                        return;
-                    }
-                }
-            }
+            return;
         }
-        else
+
+        auto head = this->body.back();
+        for (auto i = this->body.begin(); i != --this->body.end(); i++)
         {
-            this->is_alive = false;
+            if (i->at(0) == head.at(0) && i->at(1) == head.at(1))
+            {
+                this->is_alive = false;
+                return;
+            }
         }
     }
 
@@ -229,7 +223,7 @@ public:
             mvprintw(prev[0], prev[1], " ");
             this->body.erase(this->body.begin());
         }
-        mvwprintw(stdscr, this->y, this->x, "█");
+        mvprintw(this->y, this->x, "█");
     }
 
     void update()
@@ -262,10 +256,30 @@ public:
             break;
         }
 
+        if (this->x > this->maxx)
+        {
+            this->x = 0;
+        }
+
+        if (this->x < 0)
+        {
+            this->x = this->maxx;
+        }
+
+        if (this->y > this->maxy)
+        {
+            this->y = 0;
+        }
+
+        if (this->y < 0)
+        {
+            this->y = this->maxy;
+        }
+
         this->draw();
     }
 
-    void grow()
+    inline void grow()
     {
         this->len++;
     }
@@ -297,6 +311,7 @@ int main()
     {
         snake.update();
         food.draw();
+
         if (food.is_eaten(snake.y, snake.x))
         {
             score++;
