@@ -14,6 +14,7 @@ Snake::Snake()
   this->direction = SnakeDirection::LEFT;
   this->is_alive = true;
   this->len = 3;
+  this->body.reserve(static_cast<size_t>(this->maxx * this->maxy));
 }
 
 void Snake::draw()

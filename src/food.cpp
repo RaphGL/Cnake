@@ -12,7 +12,7 @@ Food::Food(std::vector<std::array<int, 2>> &snake_body)
 
   for (;;)
   {
-    std::srand(time(NULL));
+    std::srand(time(nullptr));
     this->x = std::rand() % (maxx - 3);
     this->y = std::rand() % (maxy - 4 - 3);
 

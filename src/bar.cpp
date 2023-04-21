@@ -1,6 +1,7 @@
 #include "bar.hpp"
 #include <ncurses.h>
 #include <string>
+#include <string_view>
 
 Bar::Bar()
 {
@@ -31,11 +32,12 @@ void Bar::show_endscreen(int score)
     mvprintw(midy, x, " ");
   }
 
-  std::string msg{"Final Score: %d"};
-  mvprintw((this->y + this->maxy) / 2, this->x / 2 - msg.size() / 2,
-           msg.c_str(), score);
+  char msg[] = "Final Score:    ";
+  int centered_text = (this->x / 2 + static_cast<int>(sizeof(msg) / sizeof(char))) / 2;
+  mvprintw((this->y + this->maxy) / 2, centered_text,
+           "Final Score: %d", score);
 
-  std::string again{"GAME OVER"};
-  mvprintw((this->maxy + 3) / 2, this->maxx / 2 - again.size() / 2, "%s",
-           again.c_str());
+  char again[] = "GAME OVER";
+  mvprintw((this->maxy + 3) / 2, this->maxx / 2 - static_cast<int>(sizeof(again) / sizeof(char)) / 2, "%s",
+           again);
 }
