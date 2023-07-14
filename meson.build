@@ -1,13 +1,13 @@
 project(
-  'cnakepp', 'cpp', 
+  'cnake', 'c', 
   default_options: [
-    'cpp_std=c++17', 
+    'c_std=c11', 
     'warning_level=1', 
     'buildtype=release'] 
 )
 
 executable(
-  'cnakepp', 
-  ['src/bar.cpp', 'src/food.cpp', 'src/main.cpp', 'src/snake.cpp'],
+  'cnake', 
+  ['src/main.c'],
   dependencies: dependency('ncursesw')
 )

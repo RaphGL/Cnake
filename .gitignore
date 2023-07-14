@@ -1,5 +1,6 @@
-cnakepp
-cnakepp_debug
+cnake
+cnake_debug
+.cache
 
 # Prerequisites
 *.d

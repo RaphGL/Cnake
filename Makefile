@@ -1,15 +1,15 @@
-CXX = g++
-CXXFLAGS = -Wall -Wextra -Wpedantic -std=c++17 -O2
+CXX = gcc
+CXXFLAGS = -Wall -Wextra -Wpedantic -std=c11 -O2
 CXXDEBUGFLAGS = -fsanitize=address -fsanitize=undefined
-LDFLAGS = -lncursesw
+LDFLAGS = -lncursesw -lm
 
 .PHONY: all
 
-all: $(wildcard src/*.cpp)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $? -o cnakepp
+all: $(wildcard src/*.c)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $? -o cnake
 
-debug: $(wildcard src/*.cpp)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(CXXDEBUGFLAGS) $? -o cnakepp_debug
+debug: $(wildcard src/*.c)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(CXXDEBUGFLAGS) $? -o cnake_debug
 
 clean:
-	$(RM) cnakepp cnakepp_debug
+	$(RM) cnake cnake_debug
