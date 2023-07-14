@@ -1,10 +1,9 @@
+#include "startscreen.h"
 #include "colors.h"
 #include <ncurses.h>
 #include <string.h>
 
-typedef enum { ONE_PLAYER, ONE_PLAYERS, LEADERBOARD } SelectedPage;
-
-static char selections[][20] = {
+static char selections[3][20] = {
     "    1 Player       ",
     "    2 Players      ",
     "    Leaderboard    ",
@@ -13,7 +12,41 @@ static char selections[][20] = {
 static const int no_selections = sizeof(selections) / sizeof(selections[0]);
 static int selected = 0;
 
-static void draw_selectmenu(int y, int x) {
+static SelectedPage draw_selectmenu(int key, int y, int x) {
+  switch (key) {
+  case 'j':
+  case 's':
+  case KEY_DOWN:
+    if (selected < no_selections - 1) {
+      ++selected;
+    }
+    break;
+
+  case 'k':
+  case 'w':
+  case KEY_UP:
+    if (selected > 0) {
+      --selected;
+    }
+    break;
+
+  case '\n':
+    switch (selected) {
+    case 0:
+      return ONE_PLAYER;
+      break;
+
+    case 1:
+      return TWO_PLAYERS;
+      break;
+
+    case 2:
+      return LEADERBOARD;
+      break;
+    }
+    break;
+  }
+
   for (int i = 0; i < no_selections; i++) {
     // highlight selected option on menu
     if (i == selected) {
@@ -27,6 +60,8 @@ static void draw_selectmenu(int y, int x) {
       attroff(GREEN_BG | A_BOLD);
     }
   }
+
+  return NONE;
 }
 
 // X and Y are the center points for the snake ascii art
@@ -51,8 +86,9 @@ static void draw_instructions(int y, int x) {
   mvprintw(y, x - strlen(instructions) / 2, "%s", instructions);
 }
 
-void draw_startscreen(int maxy, int maxx) {
+SelectedPage draw_startscreen(int key, int maxy, int maxx) {
   draw_snake(maxy / 4, maxx / 2);
   draw_instructions(maxy - 1, maxx / 2);
-  draw_selectmenu(maxy / 2, maxx / 2);
+    printw("%d", selected);
+  return draw_selectmenu(key, maxy / 2, maxx / 2);
 }

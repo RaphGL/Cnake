@@ -6,8 +6,10 @@ project(
     'buildtype=release'] 
 )
 
+cc = meson.get_compiler('c')
+
 executable(
   'cnake', 
-  ['src/main.c'],
-  dependencies: dependency('ncursesw')
+  ['src/main.c', 'src/colors.c', 'src/startscreen.c', 'src/vector.c'],
+  dependencies: [dependency('ncursesw'), cc.find_library('m')]
 )
