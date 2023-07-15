@@ -82,13 +82,12 @@ static void draw_snake(int y, int x) {
 }
 
 static void draw_instructions(int y, int x) {
-  const char *instructions = "↑ w \t ← a \t ↓ s \t → d";
+  const char *instructions = "↑ w \t ↓ s \t Enter";
   mvprintw(y, x - strlen(instructions) / 2, "%s", instructions);
 }
 
 SelectedPage draw_startscreen(int key, int maxy, int maxx) {
   draw_snake(maxy / 4, maxx / 2);
   draw_instructions(maxy - 1, maxx / 2);
-    printw("%d", selected);
   return draw_selectmenu(key, maxy / 2, maxx / 2);
 }

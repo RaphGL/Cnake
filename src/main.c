@@ -1,4 +1,5 @@
 #include "colors.h"
+#include "game.h"
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
@@ -13,7 +14,8 @@
 #include <unistd.h> // for usleep
 #endif
 
-void sleep_ms(int milliseconds) { // cross-platform sleep function
+// cross-platform sleep function
+void sleep_ms(int milliseconds) {
 #ifdef WIN32
   Sleep(milliseconds);
 #elif _POSIX_C_SOURCE >= 199309L
@@ -28,12 +30,33 @@ void sleep_ms(int milliseconds) { // cross-platform sleep function
 #endif
 }
 
-void start_one_player(void) {
-  clear();
+void start_one_player() {
+  int key = 0, maxy = 0, maxx = 0;
+  getmaxyx(stdscr, maxy, maxx);
+
+  Snake snake = snake_new(maxy, maxx);
+  Food food = food_new(&snake, maxy, maxx);
+  int score = 0;
   for (;;) {
-    mvprintw(0, 0, "start one player");
+    clear();
+    getmaxyx(stdscr, maxy, maxx);
+    maxy -= 2;
+
+    snake_draw(&snake, key, maxy, maxx);
+    food_draw(&food);
+    score_draw(score, maxy + 1, maxx);
+
+    if (food_is_eaten(&food, &snake)) {
+      food = food_new(&snake, maxy, maxx);
+      snake_grow(&snake);
+      ++score;
+    }
+
+    key = getch();
     refresh();
   }
+
+  snake_free(&snake);
 }
 
 void start_two_players(void) {
@@ -60,11 +83,13 @@ int main(void) {
   noecho();
   curs_set(0);
   keypad(stdscr, true);
+  timeout(80);
   cnake_init_colors();
 
   int maxy = 0, maxx = 0;
   int key = 0;
   for (;;) {
+    clear();
     getmaxyx(stdscr, maxy, maxx);
     switch (draw_startscreen(key, maxy, maxx)) {
     case ONE_PLAYER:
