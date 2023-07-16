@@ -18,6 +18,7 @@ typedef struct {
   // stores the coordinates of the body parts on screen
   vec_Vector *body_coords;
   int x, y;
+  bool is_alive;
   Direction direction;
 } Snake;
 
@@ -28,7 +29,7 @@ typedef struct {
 Snake snake_new(int maxy, int maxx);
 void snake_free(Snake *self);
 void snake_draw(Snake *self, int key, int maxy, int maxx);
-void snake_grow(Snake *self);
+void snake_eat(Snake *self, Food *const food);
 
 Food food_new(Snake *snake, int maxy, int maxx);
 void food_draw(Food *self);

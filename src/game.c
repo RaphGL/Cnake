@@ -16,12 +16,12 @@ Snake snake_new(int maxy, int maxx) {
 
   vec_push(vec, &(Coordinate){.x = maxx / 2 - 2, .y = maxy / 2});
   vec_push(vec, &(Coordinate){.x = maxx / 2 - 1, .y = maxy / 2});
-  vec_push(vec, &(Coordinate){.x = maxx / 2, .y = maxy / 2});
   return (Snake){
       .body_coords = vec,
       .direction = RIGHT,
       .x = maxx / 2,
       .y = maxy / 2,
+      .is_alive = true,
   };
 }
 
@@ -63,13 +63,22 @@ static void snake_get_direction(Snake *self, int key) {
   }
 }
 
+// checks for collision between head and some other body part
+static inline void snake_update_health_status(Snake *self) {
+  Coordinate curr;
+  for (int i = 0; i < vec_len(self->body_coords); i++) {
+    vec_get(self->body_coords, i, &curr);
+    if (curr.x == self->x && curr.y == self->y) {
+      self->is_alive = false;
+    }
+  }
+}
+
 #define TIMEOUT 80
 static void snake_update(Snake *self, int maxy, int maxx) {
-  // this->check_life_status();
-  //
-  // if (!is_alive) {
-  //   return;
-  // }
+  snake_update_health_status(self);
+  vec_push(self->body_coords, &(Coordinate){.x = self->x, .y = self->y});
+  vec_remove(self->body_coords, 0, NULL);
 
   switch (self->direction) {
   case LEFT:
@@ -90,7 +99,7 @@ static void snake_update(Snake *self, int maxy, int maxx) {
     break;
   }
 
-  if (self->x > maxx) {
+  if (self->x >= maxx) {
     self->x = 0;
   }
 
@@ -111,21 +120,23 @@ void snake_draw(Snake *const self, int key, int maxy, int maxx) {
   attron(GREEN_FG);
   snake_get_direction(self, key);
   snake_update(self, maxy, maxx);
-  vec_push(self->body_coords, &(Coordinate){.x = self->x, .y = self->y});
-  vec_remove(self->body_coords, 0, NULL);
 
   for (size_t i = 0; i < vec_len(self->body_coords); i++) {
     Coordinate coord = {0};
     vec_get(self->body_coords, i, &coord);
     mvprintw(coord.y, coord.x, "█");
   }
+  mvprintw(self->y, self->x, "█");
 
   attroff(GREEN_FG);
 }
 
-void snake_grow(Snake *self) {
-  Coordinate curr = (Coordinate){.x = self->x, .y = self->y};
-  vec_push(self->body_coords, &curr);
+void snake_eat(Snake *self, Food *const food) {
+  self->x = food->x;
+  self->y = food->y;
+  Coordinate before_head;
+  vec_get(self->body_coords, vec_len(self->body_coords) - 1, &before_head);
+  vec_push(self->body_coords, &before_head);
 }
 
 Food food_new(Snake *const snake, int maxy, int maxx) {

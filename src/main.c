@@ -4,6 +4,7 @@
 #include <locale.h>
 #include <ncurses.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef WIN32
@@ -47,9 +48,13 @@ void start_one_player() {
     score_draw(score, maxy + 1, maxx);
 
     if (food_is_eaten(&food, &snake)) {
+      snake_eat(&snake, &food);
       food = food_new(&snake, maxy, maxx);
-      snake_grow(&snake);
       ++score;
+    }
+
+    if (!snake.is_alive) {
+      exit(0);
     }
 
     key = getch();
