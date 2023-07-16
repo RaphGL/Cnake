@@ -1,8 +1,10 @@
 #include "colors.h"
 #include "game.h"
+#include "pausemenu.h"
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,8 +17,7 @@
 #include <unistd.h> // for usleep
 #endif
 
-// cross-platform sleep function
-void sleep_ms(int milliseconds) {
+void sleep_ms(int milliseconds) { // cross-platform sleep function
 #ifdef WIN32
   Sleep(milliseconds);
 #elif _POSIX_C_SOURCE >= 199309L
@@ -39,6 +40,10 @@ void start_one_player() {
   Food food = food_new(&snake, maxy, maxx);
   int score = 0;
   for (;;) {
+    if (!snake.is_alive) {
+      exit(0);
+    }
+
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
@@ -46,15 +51,25 @@ void start_one_player() {
     snake_draw(&snake, key, maxy, maxx);
     food_draw(&food);
     score_draw(score, maxy + 1, maxx);
+    switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
+    case SO_MAINMENU:
+      return;
+      break;
+
+    case SO_RESTART:
+      snake_free(&snake);
+      snake = snake_new(maxy, maxx);
+      food = food_new(&snake, maxy, maxx);
+      break;
+
+    default:
+      break;
+    }
 
     if (food_is_eaten(&food, &snake)) {
       snake_eat(&snake, &food);
       food = food_new(&snake, maxy, maxx);
       ++score;
-    }
-
-    if (!snake.is_alive) {
-      exit(0);
     }
 
     key = getch();
@@ -80,6 +95,13 @@ void draw_leaderboard(void) {
   }
 }
 
+void cnake_exit(int signum) {
+  clear();
+  refresh();
+  endwin();
+  exit(0);
+}
+
 int main(void) {
   clear();
   setlocale(LC_ALL, "");
@@ -90,6 +112,8 @@ int main(void) {
   keypad(stdscr, true);
   timeout(80);
   cnake_init_colors();
+  signal(SIGINT, cnake_exit);
+  signal(SIGTERM, cnake_exit);
 
   int maxy = 0, maxx = 0;
   int key = 0;
@@ -97,16 +121,16 @@ int main(void) {
     clear();
     getmaxyx(stdscr, maxy, maxx);
     switch (draw_startscreen(key, maxy, maxx)) {
-    case ONE_PLAYER:
+    case SP_ONE_PLAYER:
       start_one_player();
       break;
-    case TWO_PLAYERS:
+    case SP_TWO_PLAYERS:
       start_two_players();
       break;
-    case LEADERBOARD:
+    case SP_LEADERBOARD:
       draw_leaderboard();
       break;
-    case NONE:
+    case SP_NONE:
       break;
     }
 

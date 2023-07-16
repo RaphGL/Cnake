@@ -43,7 +43,4 @@ bool vec_is_empty(const vec_Vector *vec);
 // Appends vector from src to dest
 bool vec_append(vec_Vector *restrict dest, const vec_Vector *src);
 
-// converts an array into a vector
-vec_Vector *vec_from(void *const array, size_t length, size_t item_size);
-
 #endif

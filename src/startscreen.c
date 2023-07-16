@@ -33,15 +33,15 @@ static SelectedPage draw_selectmenu(int key, int y, int x) {
   case '\n':
     switch (selected) {
     case 0:
-      return ONE_PLAYER;
+      return SP_ONE_PLAYER;
       break;
 
     case 1:
-      return TWO_PLAYERS;
+      return SP_TWO_PLAYERS;
       break;
 
     case 2:
-      return LEADERBOARD;
+      return SP_LEADERBOARD;
       break;
     }
     break;
@@ -53,7 +53,7 @@ static SelectedPage draw_selectmenu(int key, int y, int x) {
       attron(GREEN_BG | A_BOLD);
     }
 
-    mvprintw(y++ - no_selections / 2, x - sizeof(selections[i]) / 2, "%s",
+    mvprintw(y++ - no_selections / 2, x - strlen(selections[i]) / 2, "%s",
              selections[i]);
 
     if (i == selected) {
@@ -61,7 +61,7 @@ static SelectedPage draw_selectmenu(int key, int y, int x) {
     }
   }
 
-  return NONE;
+  return SP_NONE;
 }
 
 // X and Y are the center points for the snake ascii art

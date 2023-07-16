@@ -14,6 +14,9 @@ Snake snake_new(int maxy, int maxx) {
     exit(1);
   }
 
+  // creates snake with size 3
+  // the head is stored as snake.x and snake.y
+  // whereas the rest of the body is in the body_coords vector
   vec_push(vec, &(Coordinate){.x = maxx / 2 - 2, .y = maxy / 2});
   vec_push(vec, &(Coordinate){.x = maxx / 2 - 1, .y = maxy / 2});
   return (Snake){
@@ -64,9 +67,10 @@ static void snake_get_direction(Snake *self, int key) {
 }
 
 // checks for collision between head and some other body part
+// and updates self.is_alive
 static inline void snake_update_health_status(Snake *self) {
   Coordinate curr;
-  for (int i = 0; i < vec_len(self->body_coords); i++) {
+  for (size_t i = 0; i < vec_len(self->body_coords); i++) {
     vec_get(self->body_coords, i, &curr);
     if (curr.x == self->x && curr.y == self->y) {
       self->is_alive = false;
@@ -76,6 +80,8 @@ static inline void snake_update_health_status(Snake *self) {
 
 #define TIMEOUT 80
 static void snake_update(Snake *self, int maxy, int maxx) {
+  // check should happen before adding old head to vector
+  // otherwise this might result in conflicts when snake grows
   snake_update_health_status(self);
   vec_push(self->body_coords, &(Coordinate){.x = self->x, .y = self->y});
   vec_remove(self->body_coords, 0, NULL);
@@ -121,12 +127,12 @@ void snake_draw(Snake *const self, int key, int maxy, int maxx) {
   snake_get_direction(self, key);
   snake_update(self, maxy, maxx);
 
+  mvprintw(self->y, self->x, "█");
   for (size_t i = 0; i < vec_len(self->body_coords); i++) {
     Coordinate coord = {0};
     vec_get(self->body_coords, i, &coord);
     mvprintw(coord.y, coord.x, "█");
   }
-  mvprintw(self->y, self->x, "█");
 
   attroff(GREEN_FG);
 }
@@ -135,6 +141,7 @@ void snake_eat(Snake *self, Food *const food) {
   self->x = food->x;
   self->y = food->y;
   Coordinate before_head;
+  // reinserts the tail to make snake body increase
   vec_get(self->body_coords, vec_len(self->body_coords) - 1, &before_head);
   vec_push(self->body_coords, &before_head);
 }
@@ -147,8 +154,7 @@ Food food_new(Snake *const snake, int maxy, int maxx) {
     food.x = rand() % maxx;
     food.y = rand() % maxy;
 
-    // makes loop break if a new food position is found that doesn't overlap
-    // with the snake body
+    // found a food position in a coordinate where the snake is not occupying
     bool found_position = true;
     for (size_t i = 0; i < vec_len(snake->body_coords); i++) {
       Coordinate curr;
