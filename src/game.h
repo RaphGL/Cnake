@@ -36,5 +36,6 @@ void food_draw(Food *self);
 bool food_is_eaten(Food *self, Snake *const snake);
 
 void score_draw(int score, int maxy, int maxx);
+void gameover_draw(int maxy, int maxx);
 
 #endif

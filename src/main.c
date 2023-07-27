@@ -40,10 +40,6 @@ void start_one_player() {
   Food food = food_new(&snake, maxy, maxx);
   int score = 0;
   for (;;) {
-    if (!snake.is_alive) {
-      exit(0);
-    }
-
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
@@ -57,6 +53,7 @@ void start_one_player() {
       break;
 
     case SO_RESTART:
+    restart:
       snake_free(&snake);
       snake = snake_new(maxy, maxx);
       food = food_new(&snake, maxy, maxx);
@@ -64,6 +61,22 @@ void start_one_player() {
 
     default:
       break;
+    }
+
+    if (!snake.is_alive) {
+      for (;;) {
+        key = getch();
+        gameover_draw(maxy, maxx);
+        switch (key) {
+        case 'q':
+          raise(SIGTERM);
+          break;
+        case 'r':
+          snake.is_alive = true;
+          goto restart;
+          break;
+        }
+      }
     }
 
     if (food_is_eaten(&food, &snake)) {

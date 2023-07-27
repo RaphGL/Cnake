@@ -10,4 +10,3 @@ void cnake_init_colors(void) {
     init_pair(2, COLOR_BLACK, COLOR_GREEN);
   }
 }
-

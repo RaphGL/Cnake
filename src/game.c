@@ -8,8 +8,8 @@
 #include <time.h>
 
 Snake snake_new(int maxy, int maxx) {
-  vec_Vector *vec = vec_new(sizeof(Coordinate));
-  if (!vec) {
+  vec_Vector *snake_body = vec_new(sizeof(Coordinate));
+  if (!snake_body) {
     fputs("Could not allocate memory for snake body.", stderr);
     exit(1);
   }
@@ -17,10 +17,10 @@ Snake snake_new(int maxy, int maxx) {
   // creates snake with size 3
   // the head is stored as snake.x and snake.y
   // whereas the rest of the body is in the body_coords vector
-  vec_push(vec, &(Coordinate){.x = maxx / 2 - 2, .y = maxy / 2});
-  vec_push(vec, &(Coordinate){.x = maxx / 2 - 1, .y = maxy / 2});
+  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 2, .y = maxy / 2});
+  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 1, .y = maxy / 2});
   return (Snake){
-      .body_coords = vec,
+      .body_coords = snake_body,
       .direction = RIGHT,
       .x = maxx / 2,
       .y = maxy / 2,
@@ -89,22 +89,23 @@ static void snake_update(Snake *self, int maxy, int maxx) {
   switch (self->direction) {
   case LEFT:
     timeout(TIMEOUT);
-    self->x--;
+    --self->x;
     break;
   case RIGHT:
     timeout(TIMEOUT);
-    self->x++;
+    ++self->x;
     break;
   case UP:
     timeout(TIMEOUT * 1.8);
-    self->y--;
+    --self->y;
     break;
   case DOWN:
     timeout(TIMEOUT * 1.8);
-    self->y++;
+    ++self->y;
     break;
   }
 
+  // allows snake to wrap around when screen edge is reached
   if (self->x >= maxx) {
     self->x = 0;
   }
@@ -127,7 +128,9 @@ void snake_draw(Snake *const self, int key, int maxy, int maxx) {
   snake_get_direction(self, key);
   snake_update(self, maxy, maxx);
 
+  // head
   mvprintw(self->y, self->x, "█");
+  // body
   for (size_t i = 0; i < vec_len(self->body_coords); i++) {
     Coordinate coord = {0};
     vec_get(self->body_coords, i, &coord);
@@ -196,4 +199,21 @@ void score_draw(int score, int maxy, int maxx) {
   snprintf(msg, sizeof(msg), "Score %d    Best: %d", score, 0);
   mvprintw(maxy, (maxx - strlen(msg)) / 2, "%s", msg);
   attroff(A_REVERSE | A_BOLD);
+}
+
+void gameover_draw(int maxy, int maxx) {
+  const int h = 5;
+  int midy = (maxy - h) / 2;
+  const char *message[3] = {"Game Over", "Press `r` to restart",
+                            "Press `q` to exit"};
+
+  attron(GREEN_FG);
+  for (int i = 0; i < 3; i++) {
+    int len = strlen(message[i]);
+    mvprintw(midy + i + 1, (maxx - len) / 2, "%s\n", message[i]);
+    if (i == 0) {
+      ++midy;
+    }
+  }
+  attroff(GREEN_FG);
 }
