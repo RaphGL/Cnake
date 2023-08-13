@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-Snake snake_new(int maxy, int maxx) {
+Snake snake_new(int maxy, int maxx, int player_no) {
   vec_Vector *snake_body = vec_new(sizeof(Coordinate));
   if (!snake_body) {
     fputs("Could not allocate memory for snake body.", stderr);
@@ -24,6 +24,7 @@ Snake snake_new(int maxy, int maxx) {
       .direction = RIGHT,
       .x = maxx / 2,
       .y = maxy / 2,
+      .player_no = player_no,
       .is_alive = true,
   };
 }
@@ -34,35 +35,62 @@ void snake_free(Snake *self) {
 }
 
 static void snake_get_direction(Snake *self, int key) {
-  switch (key) {
-  case 'w':
-  case KEY_UP:
-    if (self->direction == DOWN) {
-      return;
+  if (self->player_no == 1) {
+    switch (key) {
+    case 'w':
+      if (self->direction == DOWN) {
+        return;
+      }
+      self->direction = UP;
+      break;
+    case 's':
+      if (self->direction == UP) {
+        return;
+      }
+      self->direction = DOWN;
+      break;
+    case 'd':
+      if (self->direction == LEFT) {
+        return;
+      }
+      self->direction = RIGHT;
+      break;
+    case 'a':
+      if (self->direction == RIGHT) {
+        return;
+      }
+      self->direction = LEFT;
+      break;
     }
-    self->direction = UP;
-    break;
-  case 's':
-  case KEY_DOWN:
-    if (self->direction == UP) {
-      return;
+  }
+
+  if (self->player_no == 2) {
+    switch (key) {
+    case KEY_UP:
+      if (self->direction == DOWN) {
+        return;
+      }
+      self->direction = UP;
+      break;
+    case KEY_DOWN:
+      if (self->direction == UP) {
+        return;
+      }
+      self->direction = DOWN;
+      break;
+    case KEY_RIGHT:
+      if (self->direction == LEFT) {
+        return;
+      }
+      self->direction = RIGHT;
+      break;
+    case KEY_LEFT:
+      if (self->direction == RIGHT) {
+        return;
+      }
+      self->direction = LEFT;
+      break;
     }
-    self->direction = DOWN;
-    break;
-  case 'd':
-  case KEY_RIGHT:
-    if (self->direction == LEFT) {
-      return;
-    }
-    self->direction = RIGHT;
-    break;
-  case 'a':
-  case KEY_LEFT:
-    if (self->direction == RIGHT) {
-      return;
-    }
-    self->direction = LEFT;
-    break;
   }
 }
 
@@ -124,7 +152,12 @@ static void snake_update(Snake *self, int maxy, int maxx) {
 }
 
 void snake_draw(Snake *const self, int key, int maxy, int maxx) {
-  attron(GREEN_FG);
+  if (self->player_no == 1) {
+    attron(GREEN_FG);
+  } else if (self->player_no == 2) {
+    attron(YELLOW_FG);
+  }
+
   snake_get_direction(self, key);
   snake_update(self, maxy, maxx);
 
@@ -137,7 +170,11 @@ void snake_draw(Snake *const self, int key, int maxy, int maxx) {
     mvprintw(coord.y, coord.x, "█");
   }
 
-  attroff(GREEN_FG);
+  if (self->player_no == 1) {
+    attroff(GREEN_FG);
+  } else if (self->player_no == 2) {
+    attroff(YELLOW_FG);
+  }
 }
 
 void snake_eat(Snake *self, Food *const food) {

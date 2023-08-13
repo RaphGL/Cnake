@@ -32,21 +32,32 @@ void sleep_ms(int milliseconds) { // cross-platform sleep function
 #endif
 }
 
+void game_run_frame(int maxy, int maxx, int key, int score, Snake *snake,
+                    Food *food) {
+  snake_draw(snake, key, maxy, maxx);
+  food_draw(food);
+  score_draw(score, maxy + 1, maxx);
+
+  if (food_is_eaten(food, snake)) {
+    snake_eat(snake, food);
+    *food = food_new(snake, maxy, maxx);
+    ++score;
+  }
+}
+
 void start_one_player() {
   int key = 0, maxy = 0, maxx = 0;
   getmaxyx(stdscr, maxy, maxx);
 
-  Snake snake = snake_new(maxy, maxx);
+  Snake snake = snake_new(maxy, maxx, 1);
   Food food = food_new(&snake, maxy, maxx);
   int score = 0;
   for (;;) {
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
+    game_run_frame(maxy, maxx, key, score, &snake, &food);
 
-    snake_draw(&snake, key, maxy, maxx);
-    food_draw(&food);
-    score_draw(score, maxy + 1, maxx);
     switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
     case SO_MAINMENU:
       return;
@@ -55,7 +66,7 @@ void start_one_player() {
     case SO_RESTART:
     restart:
       snake_free(&snake);
-      snake = snake_new(maxy, maxx);
+      snake = snake_new(maxy, maxx, 1);
       food = food_new(&snake, maxy, maxx);
       break;
 
@@ -79,12 +90,6 @@ void start_one_player() {
       }
     }
 
-    if (food_is_eaten(&food, &snake)) {
-      snake_eat(&snake, &food);
-      food = food_new(&snake, maxy, maxx);
-      ++score;
-    }
-
     key = getch();
     refresh();
   }
@@ -93,11 +98,64 @@ void start_one_player() {
 }
 
 void start_two_players(void) {
-  clear();
+  int key = 0, maxy = 0, maxx = 0;
+  getmaxyx(stdscr, maxy, maxx);
+
+  Snake snake1 = snake_new(maxy, maxx, 1);
+  Snake snake2 = snake_new(maxy, maxx, 2);
+  snake2.y += 5;
+  Food food = food_new(&snake1, maxy, maxx);
+  int score = 0;
+
   for (;;) {
-    mvprintw(0, 0, "start two players");
+    clear();
+    getmaxyx(stdscr, maxy, maxx);
+    maxy -= 2;
+    game_run_frame(maxy, maxx, key, score, &snake1, &food);
+    game_run_frame(maxy, maxx, key, score, &snake2, &food);
+
+    switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
+    case SO_MAINMENU:
+      return;
+      break;
+
+    case SO_RESTART:
+    restart:
+      snake_free(&snake1);
+      snake_free(&snake2);
+      snake1 = snake_new(maxy, maxx, 1);
+      snake2 = snake_new(maxy, maxx, 2);
+      snake2.y += 5;
+      food = food_new(&snake1, maxy, maxx);
+      break;
+
+    default:
+      break;
+    }
+
+    if (!snake1.is_alive || !snake2.is_alive) {
+      for (;;) {
+        key = getch();
+        gameover_draw(maxy, maxx);
+        switch (key) {
+        case 'q':
+          raise(SIGTERM);
+          break;
+        case 'r':
+          snake1.is_alive = true;
+          snake2.is_alive = true;
+          goto restart;
+          break;
+        }
+      }
+    }
+
+    key = getch();
     refresh();
   }
+
+  snake_free(&snake1);
+  snake_free(&snake2);
 }
 
 void draw_leaderboard(void) {
