@@ -32,8 +32,8 @@ void sleep_ms(int milliseconds) { // cross-platform sleep function
 #endif
 }
 
-void game_run_frame(int maxy, int maxx, int key, int *score, Snake *snake,
-                    Food *food) {
+void snake_next_frame(int maxy, int maxx, int key, int *score, Snake *snake,
+                      Food *food) {
   snake_draw(snake, key, maxy, maxx);
   food_draw(food);
 
@@ -44,7 +44,7 @@ void game_run_frame(int maxy, int maxx, int key, int *score, Snake *snake,
   }
 }
 
-void start_one_player() {
+void start_one_player(void) {
   int key = 0, maxy = 0, maxx = 0;
   getmaxyx(stdscr, maxy, maxx);
 
@@ -55,7 +55,7 @@ void start_one_player() {
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
-    game_run_frame(maxy, maxx, key, &score, &snake, &food);
+    snake_next_frame(maxy, maxx, key, &score, &snake, &food);
     score_draw(1, score, 0, maxy + 1, maxx);
 
     switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
@@ -68,6 +68,7 @@ void start_one_player() {
       snake_free(&snake);
       snake = snake_new(maxy, maxx, 1);
       food = food_new(&snake, maxy, maxx);
+      score = 0;
       break;
 
     default:
@@ -111,8 +112,8 @@ void start_two_players(void) {
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
-    game_run_frame(maxy, maxx, key, &score1, &snake1, &food);
-    game_run_frame(maxy, maxx, key, &score2, &snake2, &food);
+    snake_next_frame(maxy, maxx, key, &score1, &snake1, &food);
+    snake_next_frame(maxy, maxx, key, &score2, &snake2, &food);
     score_draw(2, score1, score2, maxy + 1, maxx);
 
     switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
@@ -124,9 +125,11 @@ void start_two_players(void) {
     restart:
       snake_free(&snake1);
       snake_free(&snake2);
-      snake1 = snake_new(maxy, maxx, 1);
-      snake2 = snake_new(maxy, maxx, 2);
+      snake1 = snake_new(maxy, maxx, PLAYER_ONE);
+      snake2 = snake_new(maxy, maxx, PLAYER_TWO);
       snake2.y += 5;
+      score1 = 0;
+      score2 = 0;
       food = food_new(&snake1, maxy, maxx);
       break;
 
@@ -134,7 +137,21 @@ void start_two_players(void) {
       break;
     }
 
+    // TODO: say which player lost by colliding
+    switch (snake_collided(&snake1, &snake2)) {
+    case PLAYER_ONE:
+      snake2.is_alive = false;
+      break;
+    case PLAYER_TWO:
+      snake1.is_alive = false;
+      break;
+    case PLAYER_NONE:
+      break;
+    }
+
     if (!snake1.is_alive || !snake2.is_alive) {
+      snake1.is_alive = false;
+      snake2.is_alive = false;
       for (;;) {
         key = getch();
         gameover_draw(maxy, maxx);
@@ -157,14 +174,6 @@ void start_two_players(void) {
 
   snake_free(&snake1);
   snake_free(&snake2);
-}
-
-void draw_leaderboard(void) {
-  clear();
-  for (;;) {
-    mvprintw(0, 0, "show leaderboard");
-    refresh();
-  }
 }
 
 void cnake_exit(int signum) {
@@ -200,7 +209,7 @@ int main(void) {
       start_two_players();
       break;
     case SP_LEADERBOARD:
-      draw_leaderboard();
+      // TODO
       break;
     case SP_NONE:
       break;

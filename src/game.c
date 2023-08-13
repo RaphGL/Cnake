@@ -186,8 +186,24 @@ void snake_eat(Snake *self, Food *const food) {
   vec_push(self->body_coords, &before_head);
 }
 
-Player snake_collided(Snake *snake1, Snake *snake2) {
+Player snake_collided(Snake *const snake1, Snake *const snake2) {
+  Coordinate part;
 
+  for (size_t i = 0; i < vec_len(snake2->body_coords); i++) {
+    vec_get(snake2->body_coords, i, &part);
+    if (snake1->x == part.x && snake1->y == part.y) {
+      return PLAYER_ONE;
+    }
+  }
+
+  for (size_t i = 0; i < vec_len(snake1->body_coords); i++) {
+    vec_get(snake1->body_coords, i, &part);
+    if (snake2->x == part.x && snake2->y == part.y) {
+      return PLAYER_TWO;
+    }
+  }
+
+  return PLAYER_NONE;
 }
 
 Food food_new(Snake *const snake, int maxy, int maxx) {
@@ -242,7 +258,8 @@ void score_draw(int no_players, int score1, int score2, int maxy, int maxx) {
     snprintf(msg, sizeof(msg), "Score %d    Best: %d", score1, 0);
     break;
   case 2:
-    snprintf(msg, sizeof(msg), "Score P1: %d    Score P2: %d    Best: %d", score1, score2, 0);
+    snprintf(msg, sizeof(msg), "Score P1: %d    Score P2: %d    Best: %d",
+             score1, score2, 0);
     break;
   }
   mvprintw(maxy, (maxx - strlen(msg)) / 2, "%s", msg);
