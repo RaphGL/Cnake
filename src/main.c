@@ -32,16 +32,15 @@ void sleep_ms(int milliseconds) { // cross-platform sleep function
 #endif
 }
 
-void game_run_frame(int maxy, int maxx, int key, int score, Snake *snake,
+void game_run_frame(int maxy, int maxx, int key, int *score, Snake *snake,
                     Food *food) {
   snake_draw(snake, key, maxy, maxx);
   food_draw(food);
-  score_draw(score, maxy + 1, maxx);
 
   if (food_is_eaten(food, snake)) {
     snake_eat(snake, food);
     *food = food_new(snake, maxy, maxx);
-    ++score;
+    ++(*score);
   }
 }
 
@@ -56,7 +55,8 @@ void start_one_player() {
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
-    game_run_frame(maxy, maxx, key, score, &snake, &food);
+    game_run_frame(maxy, maxx, key, &score, &snake, &food);
+    score_draw(1, score, 0, maxy + 1, maxx);
 
     switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
     case SO_MAINMENU:
@@ -101,18 +101,19 @@ void start_two_players(void) {
   int key = 0, maxy = 0, maxx = 0;
   getmaxyx(stdscr, maxy, maxx);
 
-  Snake snake1 = snake_new(maxy, maxx, 1);
-  Snake snake2 = snake_new(maxy, maxx, 2);
+  Snake snake1 = snake_new(maxy, maxx, PLAYER_ONE);
+  Snake snake2 = snake_new(maxy, maxx, PLAYER_TWO);
   snake2.y += 5;
   Food food = food_new(&snake1, maxy, maxx);
-  int score = 0;
+  int score1 = 0, score2 = 0;
 
   for (;;) {
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
-    game_run_frame(maxy, maxx, key, score, &snake1, &food);
-    game_run_frame(maxy, maxx, key, score, &snake2, &food);
+    game_run_frame(maxy, maxx, key, &score1, &snake1, &food);
+    game_run_frame(maxy, maxx, key, &score2, &snake2, &food);
+    score_draw(2, score1, score2, maxy + 1, maxx);
 
     switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
     case SO_MAINMENU:

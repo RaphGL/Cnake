@@ -104,7 +104,6 @@ bool vec_get(const vec_Vector *vec, const size_t index, void *restrict dest) {
 
 // Prints the vector with the specified format specifier
 void vec_printf(const char *restrict fmt, const vec_Vector *vec) {
-  // TODO
   printf("[");
   for (size_t i = 0; i < vec_len(vec); i++) {
     printf(" ");

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-Snake snake_new(int maxy, int maxx, int player_no) {
+Snake snake_new(int maxy, int maxx, Player player_no) {
   vec_Vector *snake_body = vec_new(sizeof(Coordinate));
   if (!snake_body) {
     fputs("Could not allocate memory for snake body.", stderr);
@@ -170,9 +170,9 @@ void snake_draw(Snake *const self, int key, int maxy, int maxx) {
     mvprintw(coord.y, coord.x, "█");
   }
 
-  if (self->player_no == 1) {
+  if (self->player_no == PLAYER_ONE) {
     attroff(GREEN_FG);
-  } else if (self->player_no == 2) {
+  } else if (self->player_no == PLAYER_TWO) {
     attroff(YELLOW_FG);
   }
 }
@@ -184,6 +184,10 @@ void snake_eat(Snake *self, Food *const food) {
   // reinserts the tail to make snake body increase
   vec_get(self->body_coords, vec_len(self->body_coords) - 1, &before_head);
   vec_push(self->body_coords, &before_head);
+}
+
+Player snake_collided(Snake *snake1, Snake *snake2) {
+
 }
 
 Food food_new(Snake *const snake, int maxy, int maxx) {
@@ -225,7 +229,7 @@ bool food_is_eaten(Food *self, Snake *const snake) {
   return false;
 }
 
-void score_draw(int score, int maxy, int maxx) {
+void score_draw(int no_players, int score1, int score2, int maxy, int maxx) {
   move(maxy, 0);
   for (int i = 0; i < maxx; i++) {
     printw("█");
@@ -233,7 +237,14 @@ void score_draw(int score, int maxy, int maxx) {
 
   attron(A_REVERSE | A_BOLD);
   char msg[100] = {0};
-  snprintf(msg, sizeof(msg), "Score %d    Best: %d", score, 0);
+  switch (no_players) {
+  case 1:
+    snprintf(msg, sizeof(msg), "Score %d    Best: %d", score1, 0);
+    break;
+  case 2:
+    snprintf(msg, sizeof(msg), "Score P1: %d    Score P2: %d    Best: %d", score1, score2, 0);
+    break;
+  }
   mvprintw(maxy, (maxx - strlen(msg)) / 2, "%s", msg);
   attroff(A_REVERSE | A_BOLD);
 }
