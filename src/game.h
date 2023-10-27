@@ -43,7 +43,6 @@ void food_draw(Food *self);
 bool food_is_eaten(Food *self, Snake *const snake);
 
 void score_draw(int no_players, int score1, int score2, int maxy, int maxx);
-void gameover_draw(int maxy, int maxx);
 // TODO: check which snake collided with who
 Player snake_collided(Snake *snake1, Snake *snake2);
 

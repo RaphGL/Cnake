@@ -4,32 +4,36 @@
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-#ifdef WIN32
-#include <windows.h>
-#elif _POSIX_C_SOURCE >= 199309L
-#include <time.h> // for nanosleep
-#else
-#include <unistd.h> // for usleep
-#endif
+typedef enum {
+  SO_RESUME,
+  SO_RESTART,
+  SO_MAINMENU,
+  SO_QUIT,
+} SelectedOption;
 
-void sleep_ms(int milliseconds) { // cross-platform sleep function
-#ifdef WIN32
-  Sleep(milliseconds);
-#elif _POSIX_C_SOURCE >= 199309L
-  struct timespec ts;
-  ts.tv_sec = milliseconds / 1000;
-  ts.tv_nsec = (milliseconds % 1000) * 1000000;
-  nanosleep(&ts, NULL);
-#else
-  if (milliseconds >= 1000)
-    sleep(milliseconds / 1000);
-  usleep((milliseconds % 1000) * 1000);
-#endif
+static time_t g_start = 0, g_end = 0;
+
+static OptionMenu g_pausemenu = {0};
+static OptionMenu g_endgamemenu = {0};
+
+void wait_30fps_passed(void) {
+  for (;;) {
+    time(&g_end);
+    if (g_end - g_start >= 1 / 30)
+      break;
+  }
+}
+
+void cnake_exit() {
+  clear();
+  refresh();
+  endwin();
+  exit(0);
 }
 
 void snake_next_frame(int maxy, int maxx, int key, int *score, Snake *snake,
@@ -52,13 +56,14 @@ void start_one_player(void) {
   Food food = food_new(&snake, maxy, maxx);
   int score = 0;
   for (;;) {
+    time(&g_start);
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
     snake_next_frame(maxy, maxx, key, &score, &snake, &food);
     score_draw(1, score, 0, maxy + 1, maxx);
 
-    switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
+    switch (optionmenu_draw(&g_pausemenu, key, maxy / 2, maxx / 2)) {
     case SO_MAINMENU:
       return;
       break;
@@ -71,6 +76,10 @@ void start_one_player(void) {
       score = 0;
       break;
 
+    case SO_QUIT:
+      cnake_exit();
+      break;
+
     default:
       break;
     }
@@ -78,20 +87,25 @@ void start_one_player(void) {
     if (!snake.is_alive) {
       for (;;) {
         key = getch();
-        gameover_draw(maxy, maxx);
-        switch (key) {
-        case 'q':
-          raise(SIGTERM);
+        switch (optionmenu_draw(&g_endgamemenu, key, maxy / 2, maxx / 2)) {
+        case SO_QUIT:
+          cnake_exit();
           break;
-        case 'r':
+
+        case SO_RESTART:
           snake.is_alive = true;
           goto restart;
+          break;
+
+        case SO_MAINMENU:
+          return;
           break;
         }
       }
     }
 
     key = getch();
+    wait_30fps_passed();
     refresh();
   }
 
@@ -109,6 +123,7 @@ void start_two_players(void) {
   int score1 = 0, score2 = 0;
 
   for (;;) {
+    time(&g_start);
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
@@ -116,7 +131,7 @@ void start_two_players(void) {
     snake_next_frame(maxy, maxx, key, &score2, &snake2, &food);
     score_draw(2, score1, score2, maxy + 1, maxx);
 
-    switch (pausemenu_draw(key, maxy / 2, maxx / 2)) {
+    switch (optionmenu_draw(&g_pausemenu, key, maxy / 2, maxx / 2)) {
     case SO_MAINMENU:
       return;
       break;
@@ -131,6 +146,10 @@ void start_two_players(void) {
       score1 = 0;
       score2 = 0;
       food = food_new(&snake1, maxy, maxx);
+      break;
+
+    case SO_QUIT:
+      cnake_exit();
       break;
 
     default:
@@ -154,33 +173,31 @@ void start_two_players(void) {
       snake2.is_alive = false;
       for (;;) {
         key = getch();
-        gameover_draw(maxy, maxx);
-        switch (key) {
-        case 'q':
-          raise(SIGTERM);
+        switch (optionmenu_draw(&g_endgamemenu, key, maxy / 2, maxx / 2)) {
+        case SO_QUIT:
+          cnake_exit();
           break;
-        case 'r':
+
+        case SO_RESTART:
           snake1.is_alive = true;
           snake2.is_alive = true;
           goto restart;
+          break;
+
+        case SO_MAINMENU:
+          return;
           break;
         }
       }
     }
 
     key = getch();
+    wait_30fps_passed();
     refresh();
   }
 
   snake_free(&snake1);
   snake_free(&snake2);
-}
-
-void cnake_exit(int signum) {
-  clear();
-  refresh();
-  endwin();
-  exit(0);
 }
 
 int main(void) {
@@ -193,8 +210,17 @@ int main(void) {
   keypad(stdscr, true);
   timeout(80);
   cnake_init_colors();
-  signal(SIGINT, cnake_exit);
-  signal(SIGTERM, cnake_exit);
+
+  g_pausemenu = optionmenu_new("PAUSED", true);
+  optionmenu_add_option(&g_pausemenu, SO_RESUME, "Resume");
+  optionmenu_add_option(&g_pausemenu, SO_RESTART, "Restart");
+  optionmenu_add_option(&g_pausemenu, SO_MAINMENU, "Main Menu");
+  optionmenu_add_option(&g_pausemenu, SO_QUIT, "Quit");
+
+  g_endgamemenu = optionmenu_new("GAME OVER", false);
+  optionmenu_add_option(&g_endgamemenu, SO_RESTART, "Restart");
+  optionmenu_add_option(&g_endgamemenu, SO_MAINMENU, "Main Menu");
+  optionmenu_add_option(&g_endgamemenu, SO_QUIT, "Quit");
 
   int maxy = 0, maxx = 0;
   int key = 0;
@@ -217,7 +243,6 @@ int main(void) {
 
     refresh();
     key = getch();
-    sleep_ms(1 / 60);
   }
   return 0;
 }

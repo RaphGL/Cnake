@@ -17,6 +17,8 @@ Snake snake_new(int maxy, int maxx, Player player_no) {
   // creates snake with size 3
   // the head is stored as snake.x and snake.y
   // whereas the rest of the body is in the body_coords vector
+  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 4, .y = maxy / 2});
+  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 3, .y = maxy / 2});
   vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 2, .y = maxy / 2});
   vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 1, .y = maxy / 2});
   return (Snake){
@@ -264,21 +266,4 @@ void score_draw(int no_players, int score1, int score2, int maxy, int maxx) {
   }
   mvprintw(maxy, (maxx - strlen(msg)) / 2, "%s", msg);
   attroff(A_REVERSE | A_BOLD);
-}
-
-void gameover_draw(int maxy, int maxx) {
-  const int h = 5;
-  int midy = (maxy - h) / 2;
-  const char *message[3] = {"Game Over", "Press `r` to restart",
-                            "Press `q` to exit"};
-
-  attron(GREEN_FG);
-  for (int i = 0; i < 3; i++) {
-    int len = strlen(message[i]);
-    mvprintw(midy + i + 1, (maxx - len) / 2, "%s\n", message[i]);
-    if (i == 0) {
-      ++midy;
-    }
-  }
-  attroff(GREEN_FG);
 }

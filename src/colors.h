@@ -7,6 +7,7 @@
 #define GREEN_BG COLOR_PAIR(2)
 #define YELLOW_FG COLOR_PAIR(3)
 
+// initializes default cnake colors if the terminal supports it
 void cnake_init_colors(void);
 
 #endif
