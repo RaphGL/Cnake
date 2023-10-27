@@ -21,7 +21,9 @@ static time_t g_start = 0, g_end = 0;
 static OptionMenu g_pausemenu = {0};
 static OptionMenu g_endgamemenu = {0};
 
-void wait_30fps_passed(void) {
+// stops the game until if the 30 fps are passed
+// this is to avoid needlessly redrawing and computing things
+void complete_30fps_cycle(void) {
   for (;;) {
     time(&g_end);
     if (g_end - g_start >= 1 / 30)
@@ -48,88 +50,50 @@ void snake_next_frame(int maxy, int maxx, int key, int *score, Snake *snake,
   }
 }
 
-void start_one_player(void) {
-  int key = 0, maxy = 0, maxx = 0;
-  getmaxyx(stdscr, maxy, maxx);
-
-  Snake snake = snake_new(maxy, maxx, 1);
-  Food food = food_new(&snake, maxy, maxx);
-  int score = 0;
-  for (;;) {
-    time(&g_start);
-    clear();
-    getmaxyx(stdscr, maxy, maxx);
-    maxy -= 2;
-    snake_next_frame(maxy, maxx, key, &score, &snake, &food);
-    score_draw(1, score, 0, maxy + 1, maxx);
-
-    switch (optionmenu_draw(&g_pausemenu, key, maxy / 2, maxx / 2)) {
-    case SO_MAINMENU:
-      return;
-      break;
-
-    case SO_RESTART:
-    restart:
-      snake_free(&snake);
-      snake = snake_new(maxy, maxx, 1);
-      food = food_new(&snake, maxy, maxx);
-      score = 0;
-      break;
-
-    case SO_QUIT:
-      cnake_exit();
-      break;
-
-    default:
-      break;
-    }
-
-    if (!snake.is_alive) {
-      for (;;) {
-        key = getch();
-        switch (optionmenu_draw(&g_endgamemenu, key, maxy / 2, maxx / 2)) {
-        case SO_QUIT:
-          cnake_exit();
-          break;
-
-        case SO_RESTART:
-          snake.is_alive = true;
-          goto restart;
-          break;
-
-        case SO_MAINMENU:
-          return;
-          break;
-        }
-      }
-    }
-
-    key = getch();
-    wait_30fps_passed();
-    refresh();
-  }
-
-  snake_free(&snake);
-}
-
-void start_two_players(void) {
+void start_game(bool multiplayer) {
   int key = 0, maxy = 0, maxx = 0;
   getmaxyx(stdscr, maxy, maxx);
 
   Snake snake1 = snake_new(maxy, maxx, PLAYER_ONE);
-  Snake snake2 = snake_new(maxy, maxx, PLAYER_TWO);
-  snake2.y += 5;
+  Snake snake2;
+  // pretend that snake2 is always alive when in single player
+  // this allows me to only have to handle death once
+  // as as long as one of the snakes is dead the game ends
+  snake2.is_alive = true;
+
+  if (multiplayer) {
+    snake2 = snake_new(maxy, maxx, PLAYER_TWO);
+    snake2.y += 5;
+  }
+
   Food food = food_new(&snake1, maxy, maxx);
   int score1 = 0, score2 = 0;
 
   for (;;) {
-    time(&g_start);
+    time(&g_start); // used to make game 30 FPS
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
     snake_next_frame(maxy, maxx, key, &score1, &snake1, &food);
-    snake_next_frame(maxy, maxx, key, &score2, &snake2, &food);
-    score_draw(2, score1, score2, maxy + 1, maxx);
+
+    if (multiplayer) {
+      snake_next_frame(maxy, maxx, key, &score2, &snake2, &food);
+      score_draw(2, score1, score2, maxy + 1, maxx);
+
+      // TODO: say which player lost by colliding
+      switch (snake_collided(&snake1, &snake2)) {
+      case PLAYER_ONE:
+        snake2.is_alive = false;
+        break;
+      case PLAYER_TWO:
+        snake1.is_alive = false;
+        break;
+      case PLAYER_NONE:
+        break;
+      }
+    } else {
+      score_draw(1, score1, score2, maxy + 1, maxx);
+    }
 
     switch (optionmenu_draw(&g_pausemenu, key, maxy / 2, maxx / 2)) {
     case SO_MAINMENU:
@@ -139,12 +103,16 @@ void start_two_players(void) {
     case SO_RESTART:
     restart:
       snake_free(&snake1);
-      snake_free(&snake2);
       snake1 = snake_new(maxy, maxx, PLAYER_ONE);
-      snake2 = snake_new(maxy, maxx, PLAYER_TWO);
-      snake2.y += 5;
       score1 = 0;
-      score2 = 0;
+
+      if (multiplayer) {
+        snake_free(&snake2);
+        snake2 = snake_new(maxy, maxx, PLAYER_TWO);
+        snake2.y += 5;
+        score2 = 0;
+      }
+
       food = food_new(&snake1, maxy, maxx);
       break;
 
@@ -153,18 +121,6 @@ void start_two_players(void) {
       break;
 
     default:
-      break;
-    }
-
-    // TODO: say which player lost by colliding
-    switch (snake_collided(&snake1, &snake2)) {
-    case PLAYER_ONE:
-      snake2.is_alive = false;
-      break;
-    case PLAYER_TWO:
-      snake1.is_alive = false;
-      break;
-    case PLAYER_NONE:
       break;
     }
 
@@ -192,12 +148,14 @@ void start_two_players(void) {
     }
 
     key = getch();
-    wait_30fps_passed();
+    complete_30fps_cycle();
     refresh();
   }
 
   snake_free(&snake1);
-  snake_free(&snake2);
+  if (multiplayer) {
+    snake_free(&snake2);
+  }
 }
 
 int main(void) {
@@ -229,10 +187,10 @@ int main(void) {
     getmaxyx(stdscr, maxy, maxx);
     switch (draw_startscreen(key, maxy, maxx)) {
     case SP_ONE_PLAYER:
-      start_one_player();
+      start_game(false);
       break;
     case SP_TWO_PLAYERS:
-      start_two_players();
+      start_game(true);
       break;
     case SP_LEADERBOARD:
       // TODO

@@ -14,13 +14,13 @@ Snake snake_new(int maxy, int maxx, Player player_no) {
     exit(1);
   }
 
-  // creates snake with size 3
+  // creates snake with size 4
   // the head is stored as snake.x and snake.y
   // whereas the rest of the body is in the body_coords vector
-  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 4, .y = maxy / 2});
-  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 3, .y = maxy / 2});
-  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 2, .y = maxy / 2});
-  vec_push(snake_body, &(Coordinate){.x = maxx / 2 - 1, .y = maxy / 2});
+  for (size_t i = 4; i > 0; i--) {
+    vec_push(snake_body, &(Coordinate){.x = maxx / 2 - i, .y = maxy / 2});
+  }
+
   return (Snake){
       .body_coords = snake_body,
       .direction = RIGHT,
