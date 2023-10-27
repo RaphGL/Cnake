@@ -10,6 +10,13 @@ cc = meson.get_compiler('c')
 
 executable(
   'cnake', 
-  ['src/main.c', 'src/colors.c', 'src/startscreen.c', 'src/vector.c'],
+  [
+    'src/main.c',
+    'src/colors.c',
+    'src/game.c',
+    'src/pausemenu.c',
+    'src/startscreen.c',
+    'src/vector.c'
+   ],
   dependencies: [dependency('ncursesw'), cc.find_library('m')]
 )
