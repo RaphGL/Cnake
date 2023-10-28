@@ -3,10 +3,10 @@
 #include <ncurses.h>
 #include <string.h>
 
-static char selections[3][20] = {
-    "    1 Player       ",
-    "    2 Players      ",
-    "    Leaderboard    ",
+static char selections[3][24] = {
+    "      1 Player         ",
+    "      2 Players        ",
+    "      Leaderboard      ",
 };
 
 static const int no_selections = sizeof(selections) / sizeof(selections[0]);

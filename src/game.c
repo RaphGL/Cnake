@@ -7,10 +7,14 @@
 #include <string.h>
 #include <time.h>
 
+// TODO: because head is set to maxx / 2 and maxy / 2
+// both snakes start in the same position
+// to fix this the function should initialize the snake in different
+// locations for each player
 Snake snake_new(int maxy, int maxx, Player player_no) {
   vec_Vector *snake_body = vec_new(sizeof(Coordinate));
   if (!snake_body) {
-    fputs("Could not allocate memory for snake body.", stderr);
+    perror("Could not allocate memory for snake body.");
     exit(1);
   }
 

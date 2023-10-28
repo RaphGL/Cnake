@@ -30,7 +30,6 @@ void optionmenu_add_option(OptionMenu *self, unsigned int id, char *fieldname) {
   vec_push(self->options, &of);
 }
 
-// TODO: make selected options all be the same width
 unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x) {
   if (self->hideable) {
     if (key == 'p') {
@@ -43,6 +42,10 @@ unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x) {
   }
 
   size_t options_size = vec_len(self->options);
+  // this is used to create a empty bar that contains text in the menu
+  char barfield[FIELD_MAXSIZE] = {0};
+  memset(barfield, ' ', FIELD_MAXSIZE - 1);
+  const int center_y = y - options_size / 2;
 
   for (;;) {
     // --- menu actions ---
@@ -74,9 +77,9 @@ unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x) {
 
     // --- draw menu ---
     attron(A_BOLD);
-    mvprintw(y - 2 - options_size / 2, x - strlen(self->title) / 2,
-             self->title);
+    mvprintw(center_y - 2, x - strlen(self->title) / 2, "%s", self->title);
     attroff(A_BOLD);
+
     for (int i = 0; i < options_size; i++) {
       // highlight selected option on menu
       if (i == self->chosen) {
@@ -85,8 +88,10 @@ unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x) {
 
       OptionField of;
       vec_get(self->options, i, &of);
-      mvprintw(y + i - options_size / 2, x - strlen(of.field) / 2, "%s",
-               of.field);
+
+      const int field_y = center_y + i;
+      mvprintw(field_y, x - FIELD_MAXSIZE / 2, "%s", barfield);
+      mvprintw(field_y, x - strlen(of.field) / 2, "%s", of.field);
 
       if (i == self->chosen) {
         attroff(A_BOLD | A_REVERSE);

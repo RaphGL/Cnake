@@ -4,6 +4,7 @@
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -159,6 +160,9 @@ int main(void) {
   keypad(stdscr, true);
   timeout(80);
   cnake_init_colors();
+  // cleanup and exit if the program is interrupted/terminated
+  signal(SIGINT, cnake_exit);
+  signal(SIGTERM, cnake_exit);
 
   g_pausemenu = optionmenu_new("PAUSED", true);
   optionmenu_add_option(&g_pausemenu, SO_RESUME, "Resume");
