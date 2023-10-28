@@ -4,9 +4,9 @@
 #include "vector.h"
 
 typedef enum {
-    PLAYER_NONE,
-    PLAYER_ONE,
-    PLAYER_TWO,
+  PLAYER_NONE,
+  PLAYER_ONE,
+  PLAYER_TWO,
 } Player;
 
 typedef enum {
@@ -43,7 +43,6 @@ void food_draw(Food *self);
 bool food_is_eaten(Food *self, Snake *const snake);
 
 void score_draw(int no_players, int score1, int score2, int maxy, int maxx);
-// TODO: check which snake collided with who
-Player snake_collided(Snake *snake1, Snake *snake2);
+void snake_check_collision(Snake *const snake1, Snake *const snake2);
 
 #endif

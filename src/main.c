@@ -81,16 +81,7 @@ void start_game(bool multiplayer) {
       score_draw(2, score1, score2, maxy + 1, maxx);
 
       // TODO: say which player lost by colliding
-      switch (snake_collided(&snake1, &snake2)) {
-      case PLAYER_ONE:
-        snake2.is_alive = false;
-        break;
-      case PLAYER_TWO:
-        snake1.is_alive = false;
-        break;
-      case PLAYER_NONE:
-        break;
-      }
+      snake_check_collision(&snake1, &snake2);
     } else {
       score_draw(1, score1, score2, maxy + 1, maxx);
     }

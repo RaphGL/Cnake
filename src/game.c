@@ -37,7 +37,7 @@ void snake_free(Snake *self) {
 }
 
 static void snake_get_direction(Snake *self, int key) {
-  if (self->player_no == 1) {
+  if (self->player_no == PLAYER_ONE) {
     switch (key) {
     case 'w':
       if (self->direction == DOWN) {
@@ -66,7 +66,7 @@ static void snake_get_direction(Snake *self, int key) {
     }
   }
 
-  if (self->player_no == 2) {
+  if (self->player_no == PLAYER_TWO) {
     switch (key) {
     case KEY_UP:
       if (self->direction == DOWN) {
@@ -153,24 +153,33 @@ static void snake_update(Snake *self, int maxy, int maxx) {
   }
 }
 
-void snake_draw(Snake *const self, int key, int maxy, int maxx) {
-  if (self->player_no == 1) {
-    attron(GREEN_FG);
-  } else if (self->player_no == 2) {
-    attron(YELLOW_FG);
-  }
+inline static void snake_highlight_head(Snake *const self) {
+  attron(RED_FG);
+  mvprintw(self->y, self->x, "█");
+  attroff(RED_FG);
+}
 
+void snake_draw(Snake *const self, int key, int maxy, int maxx) {
   snake_get_direction(self, key);
   snake_update(self, maxy, maxx);
 
   // head
   mvprintw(self->y, self->x, "█");
+
   // body
+  if (self->player_no == PLAYER_ONE) {
+    attron(GREEN_FG);
+  } else if (self->player_no == PLAYER_TWO) {
+    attron(YELLOW_FG);
+  }
   for (size_t i = 0; i < vec_len(self->body_coords); i++) {
     Coordinate coord = {0};
     vec_get(self->body_coords, i, &coord);
     mvprintw(coord.y, coord.x, "█");
   }
+
+  if (!self->is_alive)
+    snake_highlight_head(self);
 
   if (self->player_no == PLAYER_ONE) {
     attroff(GREEN_FG);
@@ -188,24 +197,31 @@ void snake_eat(Snake *self, Food *const food) {
   vec_push(self->body_coords, &before_head);
 }
 
-Player snake_collided(Snake *const snake1, Snake *const snake2) {
+void snake_check_collision(Snake *const snake1, Snake *const snake2) {
   Coordinate part;
+
+  if (snake1->x == snake2->x && snake1->y == snake2->y) {
+    snake_highlight_head(snake1);
+    snake_highlight_head(snake2);
+    snake1->is_alive = false;
+    snake2->is_alive = false;
+  }
 
   for (size_t i = 0; i < vec_len(snake2->body_coords); i++) {
     vec_get(snake2->body_coords, i, &part);
     if (snake1->x == part.x && snake1->y == part.y) {
-      return PLAYER_ONE;
+      snake_highlight_head(snake1);
+      snake1->is_alive = false;
     }
   }
 
   for (size_t i = 0; i < vec_len(snake1->body_coords); i++) {
     vec_get(snake1->body_coords, i, &part);
     if (snake2->x == part.x && snake2->y == part.y) {
-      return PLAYER_TWO;
+      snake_highlight_head(snake2);
+      snake2->is_alive = false;
     }
   }
-
-  return PLAYER_NONE;
 }
 
 Food food_new(Snake *const snake, int maxy, int maxx) {
