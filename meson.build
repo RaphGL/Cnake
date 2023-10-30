@@ -16,7 +16,8 @@ executable(
     'src/game.c',
     'src/pausemenu.c',
     'src/startscreen.c',
-    'src/vector.c'
+    'src/vector.c',
+    'src/scoreboard.c'
    ],
   dependencies: [dependency('ncursesw'), cc.find_library('m')]
 )

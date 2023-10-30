@@ -1,6 +1,7 @@
 #include "colors.h"
 #include "game.h"
 #include "pausemenu.h"
+#include "scoreboard.h"
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
@@ -17,10 +18,13 @@ typedef enum {
   SO_QUIT,
 } SelectedOption;
 
+// used to store fps timing
 static time_t g_start = 0, g_end = 0;
 
+// special global variables for pages
 static OptionMenu g_pausemenu = {0};
 static OptionMenu g_endgamemenu = {0};
+static Score g_scoreboard[SCORESIZ] = {0};
 
 // stops the game until if the 30 fps are passed
 // this is to avoid needlessly redrawing and computing things
@@ -119,6 +123,10 @@ void start_game(bool multiplayer) {
     if (!snake1.is_alive || !snake2.is_alive) {
       snake1.is_alive = false;
       snake2.is_alive = false;
+      scoreboard_add_score(g_scoreboard, "AAA", score1);
+      scoreboard_add_score(g_scoreboard, "AAA", score2);
+      // TODO: remove score.bin and have proper filepath resolution
+      scoreboard_save(g_scoreboard, "./score.bin");
       for (;;) {
         key = getch();
         switch (optionmenu_draw(&g_endgamemenu, key, maxy / 2, maxx / 2)) {
@@ -174,6 +182,9 @@ int main(void) {
   optionmenu_add_option(&g_endgamemenu, SO_RESTART, "Restart");
   optionmenu_add_option(&g_endgamemenu, SO_MAINMENU, "Main Menu");
   optionmenu_add_option(&g_endgamemenu, SO_QUIT, "Quit");
+
+  // TODO: remove score.bin and have proper filepath resolution
+  scoreboard_load(g_scoreboard, "./score.bin");
 
   int maxy = 0, maxx = 0;
   int key = 0;
