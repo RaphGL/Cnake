@@ -1,12 +1,14 @@
 #include "startscreen.h"
 #include "colors.h"
 #include <ncurses.h>
+#include <signal.h>
 #include <string.h>
 
-static char selections[3][24] = {
-    "      1 Player         ",
-    "      2 Players        ",
-    "      Leaderboard      ",
+static char selections[4][24] = {
+    "      1 Player       ",
+    "      2 Players      ",
+    "     Leaderboard     ",
+    "        Quit         ",
 };
 
 static const int no_selections = sizeof(selections) / sizeof(selections[0]);
@@ -42,6 +44,10 @@ static SelectedPage draw_selectmenu(int key, int y, int x) {
 
     case 2:
       return SP_LEADERBOARD;
+      break;
+
+    case 3:
+      raise(SIGTERM);
       break;
     }
     break;
@@ -82,8 +88,10 @@ static void draw_snake(int y, int x) {
 }
 
 static void draw_instructions(int y, int x) {
-  const char *instructions = "↑ w \t ↓ s \t Enter";
-  mvprintw(y, x - strlen(instructions) / 2, "%s", instructions);
+  const char inst1[] = "Controls:";
+  const char inst2[] = "WASD  Arrows  Enter";
+  mvprintw(y - 1, x - sizeof(inst1) / 2, "%s", inst1);
+  mvprintw(y, x - sizeof(inst2) / 2, "%s", inst2);
 }
 
 SelectedPage draw_startscreen(int key, int maxy, int maxx) {

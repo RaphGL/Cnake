@@ -210,22 +210,6 @@ void snake_check_collision(Snake *const snake1, Snake *const snake2) {
     snake1->is_alive = false;
     snake2->is_alive = false;
   }
-
-  for (size_t i = 0; i < vec_len(snake2->body_coords); i++) {
-    vec_get(snake2->body_coords, i, &part);
-    if (snake1->x == part.x && snake1->y == part.y) {
-      snake_highlight_head(snake1);
-      snake1->is_alive = false;
-    }
-  }
-
-  for (size_t i = 0; i < vec_len(snake1->body_coords); i++) {
-    vec_get(snake1->body_coords, i, &part);
-    if (snake2->x == part.x && snake2->y == part.y) {
-      snake_highlight_head(snake2);
-      snake2->is_alive = false;
-    }
-  }
 }
 
 Food food_new(Snake *const snake, int maxy, int maxx) {

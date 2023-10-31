@@ -80,7 +80,7 @@ unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x) {
     mvprintw(center_y - 2, x - strlen(self->title) / 2, "%s", self->title);
     attroff(A_BOLD);
 
-    for (int i = 0; i < options_size; i++) {
+    for (size_t i = 0; i < options_size; i++) {
       // highlight selected option on menu
       if (i == self->chosen) {
         attron(A_BOLD | A_REVERSE);

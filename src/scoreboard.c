@@ -53,4 +53,4 @@ void scoreboard_add_score(Score scoreboard[SCORESIZ], char player[3],
 Score scoreboard_register_score(void);
 
 // TODO
-void scoreboard_draw(const Score scoreboard[SCORESIZ]) {}
+void scoreboard_draw(const Score scoreboard[SCORESIZ]);

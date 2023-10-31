@@ -75,7 +75,7 @@ void start_game(bool multiplayer) {
   int score1 = 0, score2 = 0;
 
   for (;;) {
-    time(&g_start); // used to make game 30 FPS
+    time(&g_start); // used to make the game run at  30 FPS
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
@@ -127,6 +127,17 @@ void start_game(bool multiplayer) {
       scoreboard_add_score(g_scoreboard, "AAA", score2);
       // TODO: remove score.bin and have proper filepath resolution
       scoreboard_save(g_scoreboard, "./score.bin");
+
+      // TODO: swap with proper scoreboard_draw func
+      {
+        move(0, 0);
+        printw("Leaderboard\n");
+        for (size_t i = 0; i < 10; i++) {
+          Score s = g_scoreboard[i];
+          printw("%ld\t%s\t%ld\n", i, s.player, s.score);
+        }
+      }
+
       for (;;) {
         key = getch();
         switch (optionmenu_draw(&g_endgamemenu, key, maxy / 2, maxx / 2)) {
