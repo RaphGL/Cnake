@@ -18,23 +18,10 @@ typedef enum {
   SO_QUIT,
 } SelectedOption;
 
-// used to store fps timing
-static time_t g_start = 0, g_end = 0;
-
 // special global variables for pages
 static OptionMenu g_pausemenu = {0};
 static OptionMenu g_endgamemenu = {0};
 static Score g_scoreboard[SCORESIZ] = {0};
-
-// stops the game until if the 30 fps are passed
-// this is to avoid needlessly redrawing and computing things
-void complete_30fps_cycle(void) {
-  for (;;) {
-    time(&g_end);
-    if (g_end - g_start >= 1 / 30)
-      break;
-  }
-}
 
 void cnake_exit() {
   clear();
@@ -75,7 +62,6 @@ void start_game(bool multiplayer) {
   int score1 = 0, score2 = 0;
 
   for (;;) {
-    time(&g_start); // used to make the game run at  30 FPS
     clear();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
@@ -83,12 +69,13 @@ void start_game(bool multiplayer) {
 
     if (multiplayer) {
       snake_next_frame(maxy, maxx, key, &score2, &snake2, &food);
-      score_draw(2, score1, score2, maxy + 1, maxx);
+      // the first item in scoreboard is always the biggest
+      score_draw(2, score1, score2, g_scoreboard[0].score, maxy + 1, maxx);
 
       // TODO: say which player lost by colliding
       snake_check_collision(&snake1, &snake2);
     } else {
-      score_draw(1, score1, score2, maxy + 1, maxx);
+      score_draw(1, score1, score2, g_scoreboard[0].score, maxy + 1, maxx);
     }
 
     switch (optionmenu_draw(&g_pausemenu, key, maxy / 2, maxx / 2)) {
@@ -159,7 +146,6 @@ void start_game(bool multiplayer) {
     }
 
     key = getch();
-    complete_30fps_cycle();
     refresh();
   }
 

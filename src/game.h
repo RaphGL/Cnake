@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "scoreboard.h"
 #include "vector.h"
 
 typedef enum {
@@ -42,7 +43,8 @@ Food food_new(Snake *snake, int maxy, int maxx);
 void food_draw(Food *self);
 bool food_is_eaten(Food *self, Snake *const snake);
 
-void score_draw(int no_players, int score1, int score2, int maxy, int maxx);
+void score_draw(int no_players, int score1, int score2, int top_score, int maxy,
+                int maxx);
 void snake_check_collision(Snake *const snake1, Snake *const snake2);
 
 #endif
