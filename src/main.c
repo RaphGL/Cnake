@@ -55,7 +55,6 @@ void start_game(bool multiplayer) {
 
   if (multiplayer) {
     snake2 = snake_new(maxy, maxx, PLAYER_TWO);
-    snake2.y += 5;
   }
 
   Food food = food_new(&snake1, maxy, maxx);
@@ -92,7 +91,6 @@ void start_game(bool multiplayer) {
       if (multiplayer) {
         snake_free(&snake2);
         snake2 = snake_new(maxy, maxx, PLAYER_TWO);
-        snake2.y += 5;
         score2 = 0;
       }
 
