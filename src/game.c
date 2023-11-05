@@ -22,18 +22,28 @@ Snake snake_new(int maxy, int maxx, Player player_no) {
   // creates snake with size 4
   // the head is stored as snake.x and snake.y
   // whereas the rest of the body is in the body_coords vector
-  for (size_t i = 4; i > 0; i--) {
-    vec_push(snake_body, &(Coordinate){.x = maxx / 2 - i, .y = maxy / 2});
-  }
-
-  return (Snake){
+  Snake snake = (Snake){
       .body_coords = snake_body,
-      .direction = RIGHT,
-      .x = maxx / 2,
       .y = maxy / 2,
       .player_no = player_no,
       .is_alive = true,
   };
+
+  if (player_no == PLAYER_ONE) {
+    snake.x = maxx / 2 - maxx / 4;
+    snake.direction = RIGHT;
+    for (size_t i = 4; i > 0; i--) {
+      vec_push(snake_body, &(Coordinate){.x = snake.x - i, .y = snake.y});
+    }
+  } else if (player_no == PLAYER_TWO) {
+    snake.x = maxx / 2 + maxx / 4;
+    snake.direction = LEFT;
+    for (size_t i = 4; i > 0; i--) {
+      vec_push(snake_body, &(Coordinate){.x = snake.x + i, .y = snake.y});
+    }
+  }
+
+  return snake;
 }
 
 void snake_free(Snake *self) {
