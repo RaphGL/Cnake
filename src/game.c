@@ -1,6 +1,6 @@
 #include "game.h"
 #include "colors.h"
-#include "scoreboard.h"
+#include "leaderboard.h"
 #include "vector.h"
 #include <ncurses.h>
 #include <stdio.h>

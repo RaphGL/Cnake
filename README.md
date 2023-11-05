@@ -1,4 +1,4 @@
-# Cnake
+Cnake
 A snake game made in C11
 
 ![Screenshot from 2023-07-16 19-29-32](https://github.com/RaphGL/Cnake/assets/28673457/80bd075e-de33-4295-a3b1-85b0acc48cfc)
@@ -9,4 +9,7 @@ A snake game made in C11
 Move with WASD or the arrows keys  
 Press `p` to pause  
 Stay pressed to go faster  
-To leave `ctrl + c` or through the pause menu
+
+The game can be quit with `ctrl + c` or through the pause menu
+
+*Note*: For better experience I suggest you make your window smaller. Fullscreen snake is very boring.

@@ -1,7 +1,7 @@
 #include "colors.h"
 #include "game.h"
+#include "leaderboard.h"
 #include "pausemenu.h"
-#include "scoreboard.h"
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
@@ -21,13 +21,24 @@ typedef enum {
 // special global variables for pages
 static OptionMenu g_pausemenu = {0};
 static OptionMenu g_endgamemenu = {0};
-static Score g_scoreboard[SCORESIZ] = {0};
+static Score g_leaderboard[SCORESIZ] = {0};
 
 void cnake_exit() {
   clear();
   refresh();
   endwin();
   exit(0);
+}
+
+const char *cnake_get_cache_dir(void) {
+  const char *path = getenv("CSIDL_LOCAL_APPDATA");
+  if (!path) {
+    return path;
+  } else {
+    return NULL;
+  }
+
+  return "~/.cache/";
 }
 
 void snake_next_frame(int maxy, int maxx, int key, int *score, Snake *snake,
@@ -70,12 +81,12 @@ void start_game(bool multiplayer) {
     if (multiplayer) {
       snake_next_frame(maxy, maxx, key, &score2, &snake2, &food);
       // the first item in scoreboard is always the biggest
-      score_draw(2, score1, score2, g_scoreboard[0].score, maxy + 1, maxx);
+      score_draw(2, score1, score2, g_leaderboard[0].score, maxy + 1, maxx);
 
       // TODO: say which player lost by colliding
       snake_check_collision(&snake1, &snake2);
     } else {
-      score_draw(1, score1, score2, g_scoreboard[0].score, maxy + 1, maxx);
+      score_draw(1, score1, score2, g_leaderboard[0].score, maxy + 1, maxx);
     }
 
     switch (optionmenu_draw(&g_pausemenu, key, maxy / 2, maxx / 2)) {
@@ -110,20 +121,10 @@ void start_game(bool multiplayer) {
     if (!snake1.is_alive || !snake2.is_alive) {
       snake1.is_alive = false;
       snake2.is_alive = false;
-      scoreboard_add_score(g_scoreboard, "AAA", score1);
-      scoreboard_add_score(g_scoreboard, "AAA", score2);
+      leaderboard_add_score(g_leaderboard, "AAA", score1);
+      leaderboard_add_score(g_leaderboard, "AAA", score2);
       // TODO: remove score.bin and have proper filepath resolution
-      scoreboard_save(g_scoreboard, "./score.bin");
-
-      // TODO: swap with proper scoreboard_draw func
-      {
-        move(0, 0);
-        printw("Leaderboard\n");
-        for (size_t i = 0; i < 10; i++) {
-          Score s = g_scoreboard[i];
-          printw("%ld\t%s\t%ld\n", i, s.player, s.score);
-        }
-      }
+      leaderboard_save(g_leaderboard, "./score.bin");
 
       for (;;) {
         key = getch();
@@ -163,7 +164,7 @@ int main(void) {
   noecho();
   curs_set(0);
   keypad(stdscr, true);
-  timeout(80);
+  timeout(5);
   cnake_init_colors();
   // cleanup and exit if the program is interrupted/terminated
   signal(SIGINT, cnake_exit);
@@ -181,7 +182,7 @@ int main(void) {
   optionmenu_add_option(&g_endgamemenu, SO_QUIT, "Quit");
 
   // TODO: remove score.bin and have proper filepath resolution
-  scoreboard_load(g_scoreboard, "./score.bin");
+  leaderboard_load(g_leaderboard, "./score.bin");
 
   int maxy = 0, maxx = 0;
   int key = 0;
@@ -196,7 +197,13 @@ int main(void) {
       start_game(true);
       break;
     case SP_LEADERBOARD:
-      // TODO
+      for (;;) {
+        leaderboard_draw(g_leaderboard, maxy, maxx);
+        key = getch();
+        if (key == '\n' || key == 'q' || key == 'p') {
+          break;
+        }
+      }
       break;
     case SP_NONE:
       break;

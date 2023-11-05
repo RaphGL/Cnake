@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "scoreboard.h"
+#include "leaderboard.h"
 #include "vector.h"
 
 typedef enum {
