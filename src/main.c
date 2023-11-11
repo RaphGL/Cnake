@@ -72,7 +72,7 @@ void start_game(bool multiplayer) {
   int score1 = 0, score2 = 0;
 
   for (;;) {
-    clear();
+    erase();
     getmaxyx(stdscr, maxy, maxx);
     maxy -= 2;
     snake_next_frame(maxy, maxx, key, &score1, &snake1, &food);
@@ -185,7 +185,7 @@ int main(void) {
   int maxy = 0, maxx = 0;
   int key = 0;
   for (;;) {
-    clear();
+    erase();
     getmaxyx(stdscr, maxy, maxx);
     switch (draw_startscreen(key, maxy, maxx)) {
     case SP_ONE_PLAYER:
