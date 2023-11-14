@@ -14,7 +14,7 @@ executable(
     'src/main.c',
     'src/colors.c',
     'src/game.c',
-    'src/pausemenu.c',
+    'src/optionmenu.c',
     'src/startscreen.c',
     'src/vector.c',
     'src/leaderboard.c'

@@ -57,22 +57,66 @@ void leaderboard_draw(const Score leaderboard[static SCORESIZ], int maxy,
                       int maxx) {
   char row[SCORESIZ][30] = {0};
   size_t rowlen = 0;
-  for (size_t i = 0; i < SCORESIZ; i++) {
-    const Score s = leaderboard[i];
-    sprintf(row[i], "%ld      %s     %ld", i + 1, s.player, s.score);
+  // generate row text and store into row array
+  {
+    for (size_t i = 0; i < SCORESIZ; i++) {
+      Score s = leaderboard[i];
 
-    const size_t msglen = strlen(row[i]);
-    if (msglen > rowlen) {
-      rowlen = msglen;
+      // fixes alignment for table
+      {
+        if (strlen(s.player) == 0) {
+          memset(s.player, 'A', sizeof(s.player));
+        }
+
+        if (i + 1 < 10) {
+          sprintf(row[i], " %ld  │ %s │ %ld ", i + 1, s.player, s.score);
+        } else {
+          sprintf(row[i], " %ld │ %s │ %ld ", i + 1, s.player, s.score);
+        }
+      }
+
+      const size_t msglen = strlen(row[i]);
+      if (msglen > rowlen) {
+        rowlen = msglen;
+      }
     }
   }
 
-  // TODO: improve table rendering
-  const int y = maxy / 2 - SCORESIZ / 2 + 4;
-  attron(GREEN_FG);
-  mvprintw(y - 3, maxx / 2 - sizeof("Leaderboard") / 2, "Leaderboard");
-  attroff(GREEN_FG);
-  for (size_t i = 0; i < SCORESIZ; i++) {
-    mvprintw(y + i, maxx / 2 - rowlen / 2, "%s\n", row[i]);
+  // draw table frame
+  {
+    const int midy = maxy / 2 - SCORESIZ / 2 + 4;
+    attron(GREEN_FG);
+    mvprintw(midy - 3, maxx / 2 - sizeof("Leaderboard") / 2, "Leaderboard");
+    attroff(GREEN_FG);
+    for (size_t i = 0; i < SCORESIZ; i++) {
+      mvprintw(midy + i, maxx / 2 - rowlen / 2, "%s\n", row[i]);
+    }
+
+    const size_t tableminy = midy - 1, tableminx = maxx / 2 - rowlen / 2 - 2;
+    const size_t tablemaxy = tableminy + SCORESIZ + 2,
+              tablemaxx = tableminx + rowlen;
+    for (size_t y = tableminy; y < tablemaxy; y++) {
+      for (size_t x = tableminx; x < tablemaxx; x++) {
+        if (x == tableminx) {
+          if (y == tableminy) {
+            mvprintw(y, x, "┌");
+          } else if (y == tablemaxy - 1) {
+            mvprintw(y, x, "└");
+          } else {
+            mvprintw(y, x, "│");
+          }
+        } else if (x == tablemaxx - 1) {
+          if (y == tableminy) {
+            mvprintw(y, x, "┐");
+          } else if (y == tablemaxy - 1) {
+            mvprintw(y, x, "┘");
+          } else {
+            mvprintw(y, x, "│");
+          }
+        } else if (y == tableminy || y == tablemaxy - 1) {
+          mvprintw(y, x, "─");
+        }
+      }
+    }
   }
 }

@@ -40,4 +40,7 @@ void optionmenu_add_option(OptionMenu *self, unsigned int id, char *fieldname);
 
 unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x);
 
+// changes the title displayed by the optionmenu
+void optionmenu_change_title(OptionMenu *self, const char *title);
+
 #endif

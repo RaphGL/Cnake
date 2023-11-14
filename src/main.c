@@ -1,7 +1,7 @@
 #include "colors.h"
 #include "game.h"
 #include "leaderboard.h"
-#include "pausemenu.h"
+#include "optionmenu.h"
 #include "startscreen.h"
 #include <locale.h>
 #include <ncurses.h>
@@ -82,7 +82,6 @@ void start_game(bool multiplayer) {
       // the first item in scoreboard is always the biggest
       score_draw(2, score1, score2, g_leaderboard[0].score, maxy + 1, maxx);
 
-      // TODO: say which player lost by colliding
       snake_check_collision(&snake1, &snake2);
     } else {
       score_draw(1, score1, score2, g_leaderboard[0].score, maxy + 1, maxx);
@@ -117,6 +116,13 @@ void start_game(bool multiplayer) {
     }
 
     if (!snake1.is_alive || !snake2.is_alive) {
+      if (multiplayer) {
+        if (snake1.is_alive) {
+          optionmenu_change_title(&g_endgamemenu, "Player 1 Won");
+        } else if (snake2.is_alive) {
+          optionmenu_change_title(&g_endgamemenu, "Player 2 Won");
+        }
+      }
       snake1.is_alive = false;
       snake2.is_alive = false;
       leaderboard_add_score(g_leaderboard, "AAA", score1);

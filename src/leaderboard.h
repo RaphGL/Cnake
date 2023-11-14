@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// maximum amount of scores displayed in leaderboard
+// ie: the number of rows in leaderboard
 #define SCORESIZ 10
 
 typedef struct {

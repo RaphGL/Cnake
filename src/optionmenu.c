@@ -1,8 +1,9 @@
-#include "pausemenu.h"
+#include "optionmenu.h"
 #include "colors.h"
 #include "vector.h"
 #include <ncurses.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,6 +29,10 @@ void optionmenu_add_option(OptionMenu *self, unsigned int id, char *fieldname) {
   of.id = id;
   strcpy(of.field, fieldname);
   vec_push(self->options, &of);
+}
+
+void optionmenu_change_title(OptionMenu *self, const char *title) {
+  snprintf(self->title, FIELD_MAXSIZE, "%s", title);
 }
 
 unsigned int optionmenu_draw(OptionMenu *self, int key, int y, int x) {
