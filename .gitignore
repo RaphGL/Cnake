@@ -1,5 +1,7 @@
 cnake
 cnake_debug
+cnakepp
+cnakepp_debug
 .cache
 
 # Prerequisites
@@ -34,3 +36,17 @@ cnake_debug
 *.exe
 *.out
 *.app
+
+# CMake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
