@@ -13,15 +13,12 @@ constexpr auto FOOD_BLOCK{"■"};
 Food::Food(WINDOW *win, Snake *snake1, Snake *snake2) : m_win{win} {
   int maxy, maxx;
   getmaxyx(m_win, maxy, maxx);
+  // max* - 2 is the maximum position under a boxed window
+  // 1 is the minimum position under a boxed window
   std::uniform_int_distribution<int> rand_x{1, maxx - 2};
   std::uniform_int_distribution<int> rand_y{1, maxy - 2};
 
-  // max* - 2 is the maximum position under a boxed window
-  // 1 is the minimum position under a boxed window
-
   auto found_position = [this](Snake *snake) {
-    // found position where the snake body is not occupying
-    bool found{true};
     for (const auto part : snake->m_body) {
       if (m_x == part.x && m_y == part.y) {
         return false;
@@ -54,7 +51,7 @@ Food::Food(WINDOW *win, Snake *snake1, Snake *snake2) : m_win{win} {
 void Food::tick() { mvwprintw(m_win, m_y, m_x, FOOD_BLOCK); }
 
 Player Food::is_eaten(Snake *snake1, Snake *snake2) {
-  if (snake1->m_x == m_x && snake1->m_y == m_y) {
+  if (static_cast<int>(snake1->m_x) == m_x && static_cast<int>(snake1->m_y) == m_y) {
     return Player::One;
   }
 

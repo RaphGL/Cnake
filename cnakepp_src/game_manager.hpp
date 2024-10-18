@@ -7,8 +7,6 @@
 class GameManager {
   WINDOW *m_game_win{nullptr};
   WINDOW *m_panel_win{nullptr};
-  static constexpr int game_width = 60;
-  static constexpr int game_height = 22;
   int m_score_1{0};
   int m_score_2{0};
 

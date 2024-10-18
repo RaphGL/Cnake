@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 project(cnake
   DESCRIPTION "snake game written in C and C++"
   HOMEPAGE_URL "https://github.com/RaphGL/Cnake"
@@ -24,12 +26,16 @@ add_executable(cnake
   cnake_src/vector.h
 )
 
+target_compile_features(cnake PUBLIC c_std_11)
+
 target_link_libraries(cnake ncursesw m)
+
+target_compile_options(cnake PUBLIC -Wall -Wextra -pedantic-errors)
 
 # --- Improved C++ implementation ---
 
 add_executable(cnakepp
-  cnakepp_src/colors.hpp  
+  cnakepp_src/consts.hpp  
   cnakepp_src/food.cpp  
   cnakepp_src/food.hpp  
   cnakepp_src/game_manager.cpp  
@@ -41,4 +47,7 @@ add_executable(cnakepp
 
 target_link_libraries(cnakepp ncursesw)
 
+target_compile_features(cnakepp PRIVATE cxx_std_20)
+
+target_compile_options(cnakepp PUBLIC -Wall -Wextra -pedantic-errors)
 

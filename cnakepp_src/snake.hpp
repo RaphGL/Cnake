@@ -9,14 +9,14 @@ enum class Direction { Left, Right, Up, Down };
 enum class Player { None, One, Two };
 
 struct Coordinate {
-  int x, y;
+  float x, y;
 };
 
 class Snake {
   friend class Food;
 
   std::deque<Coordinate> m_body{};
-  int m_x, m_y;
+  float m_x, m_y;
   bool m_is_alive{true};
   Player m_player_num{Player::One};
   Direction m_direction;

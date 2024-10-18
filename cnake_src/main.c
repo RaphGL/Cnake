@@ -23,7 +23,9 @@ static OptionMenu g_pausemenu = {0};
 static OptionMenu g_endgamemenu = {0};
 static Score g_leaderboard[SCORESIZ] = {0};
 
-void cnake_exit() {
+void cnake_exit(int arg) {
+  (void)arg;
+
   clear();
   refresh();
   endwin();
@@ -108,7 +110,7 @@ void start_game(bool multiplayer) {
       break;
 
     case SO_QUIT:
-      cnake_exit();
+      cnake_exit(0);
       break;
 
     default:
@@ -134,7 +136,7 @@ void start_game(bool multiplayer) {
         key = getch();
         switch (optionmenu_draw(&g_endgamemenu, key, maxy / 2, maxx / 2)) {
         case SO_QUIT:
-          cnake_exit();
+          cnake_exit(0);
           break;
 
         case SO_RESTART:
