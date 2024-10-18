@@ -46,6 +46,10 @@ void GameManager::adjust_position() {
   werase(m_panel_win);
   wrefresh(m_game_win);
   wrefresh(m_panel_win);
+  // wresize is needed otherwise the window gets borked after being resized to a
+  // size smaller than the game window size
+  wresize(m_game_win, game::HEIGHT, game::WIDTH);
+  wresize(m_panel_win, 1, game::WIDTH);
   mvwin(m_game_win, new_pos.y, new_pos.x);
   mvwin(m_panel_win, new_pos.y + game::HEIGHT, new_pos.x);
 }
