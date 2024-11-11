@@ -69,7 +69,8 @@ void Snake::choose_direction_from_input(int key) {
 
 void Snake::check_health() {
   for (const auto part : m_body) {
-    if (part.x == m_x && part.y == m_y) {
+    if (static_cast<int>(part.x) == static_cast<int>(m_x) &&
+        static_cast<int>(part.y) == static_cast<int>(m_y)) {
       m_is_alive = false;
       break;
     }
@@ -102,9 +103,9 @@ void Snake::advance_in_direction() {
 
   if (truncated_x != static_cast<int>(m_x) ||
       truncated_y != static_cast<int>(m_y)) {
-    this->check_health();
     Coordinate coord = {.x = static_cast<float>(truncated_x),
                         .y = static_cast<float>(truncated_y)};
+    this->check_health();
     m_body.push_back(coord);
     m_body.pop_front();
   }
@@ -130,10 +131,10 @@ void Snake::advance_in_direction() {
 }
 
 void Snake::tick(int key) {
-  // if (m_is_alive) {
-  this->choose_direction_from_input(key);
-  this->advance_in_direction();
-  // }
+  if (m_is_alive) {
+    this->choose_direction_from_input(key);
+    this->advance_in_direction();
+  }
 
   // body
   unsigned int player_color{};
